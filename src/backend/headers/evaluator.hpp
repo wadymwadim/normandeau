@@ -4,10 +4,6 @@
 
 #include "general.hpp"
 
-// TODO it might be nice to make all this thread local. That would reduce the
-// memory usage quite a bit. For that though, we would need proper move and copy
-// operators.
-
 class Evaluator {
   private:
     mpz_t quot;

@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-enum class CodeType : uint64_t {
+enum class CodeType {
     OSO,  // open stable odd
     OSNO, // open stable not odd
     ONS,  // open not stable

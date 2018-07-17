@@ -4,8 +4,7 @@
 #include "initial_angles.hpp"
 
 struct Vertex final {
-    // We use size_t here, because these numbers depend on the
-    // size of the unfolding.
+    // We use size_t here, because these numbers depend on the size of the unfolding.
     size_t number;
     size_t branch;
 
