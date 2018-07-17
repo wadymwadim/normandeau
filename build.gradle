@@ -1,0 +1,93 @@
+apply plugin: 'application'
+apply plugin: 'cpp'
+//apply plugin: 'findbugs'
+
+mainClassName = 'billiards.viewer.Main'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // When getting the version number for a dependency, don't go to Maven Central and
+    // simply search for the package you want. You will often find many versions of the
+    // package, most of which are unofficial or out-of-date. Instead, go to the website
+    // of the package, and they will usually give you the correct Maven information there.
+    compile 'org.eclipse.collections:eclipse-collections-api:9.2.0'  // All the interfaces
+    compile 'org.eclipse.collections:eclipse-collections:9.2.0'  // The actual classes
+    compile 'com.google.guava:guava:25.1-jre'
+    compile 'org.apache.commons:commons-math3:3.6.1'
+    compile 'org.apache.commons:commons-lang3:3.7'
+    compile 'io.javaslang:javaslang:2.0.5'
+    compile 'net.java.dev.jna:jna:4.5.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+compileJava {
+    options.compilerArgs << '-Xlint' << '-Werror'
+}
+
+jar {
+    baseName = 'billiard-viewer'
+    manifest.attributes 'Main-Class': 'billiards.viewer.Main'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+    }
+}
+
+applicationDefaultJvmArgs = ['-server', '-Djna.library.path=./build/libs/backend/shared']
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+model {
+
+    components {
+
+        backend(NativeLibrarySpec) {
+
+            binaries.all {
+
+                cppCompiler.define "NDEBUG"
+                cppCompiler.args '-O3', '-march=native', '-flto', '-ftrapv'
+                linker.args '-lgmp', '-lmpfr', '-ltbb'
+
+                if (toolChain in Clang) {
+                    cppCompiler.args '-Weverything', '-Werror',
+                                     '-Wno-padded', '-Wno-comma',
+                                     '-Wno-exit-time-destructors', '-Wno-global-constructors',
+                                     '-Wno-c++98-compat', '-Wno-c++98-compat-pedantic',
+                                     '-std=c++14'
+
+                } else if (toolChain in Gcc) {
+                    cppCompiler.args '-Wall', '-Wextra', '-Wpedantic', '-Werror',
+                                     '-Wno-c++11-compat', '-Wno-c++14-compat',
+                                     '-std=c++14'
+                } else {
+                    println 'compiler unsupported; please use GCC or Clang'
+                }
+            }
+        }
+    }
+}
+
+//task testBackend(type: Exec, dependsOn: 'testExecutable') {
+    //commandLine 'build/exe/test/test'
+
+    //// save the results here
+    ////standardOutput = new FileOutputStream('build/test-results/test.out')
+    ////errorOutput = new FileOutputStream('build/test-results/test.err')
+//}
+
+// Make sure the C++ code is up to date when running the Java program
+run.dependsOn "backendSharedLibrary"
