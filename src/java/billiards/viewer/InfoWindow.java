@@ -89,7 +89,7 @@ public final class InfoWindow {
 
         final String[] split = codePairString.split(",");
         final String codeNumsString = split[0].trim();
-        final String initialAnglesString = split[1].trim();
+        final String initialAnglesString = "xy"; //split[1].trim();
 
         final Optional<ImmutableIntList> optional = Utils.splitString(codeNumsString);
         final InitialAngles initialAngles = Cover.parseInitialAngles(initialAnglesString);
@@ -153,16 +153,20 @@ public final class InfoWindow {
         buff.append(String.format("code sum = %d%n", codePair.sequence.sum()));
         buff.append(String.format("code type = %s%n", codePair.sequence.type()));
 
-        buff.append('\n');
-
-        buff.append("initial angles = " + codePair.angles);
+        //buff.append('\n');
+        //buff.append("initial angles = " + codePair.angles);
         buff.append("\n\n");
 
         final LinCom<XYEta> constraint = codePair.sequence.constraint(codePair.angles.first, codePair.angles.second);
-        buff.append("constraint = " + formatConstraint(constraint));
-        buff.append("\n\n");
+        final String constraintStr = formatConstraint(constraint);
+        //buff.append("constraint = " + formatConstraint(constraint));
+        //buff.append("\n\n");
+        if (!constraintStr.equals("0")) {
+            buff.append("Line Equation: 0 = " + constraintStr);
+            buff.append("\n\n\n");
+        }
 
-        buff.append("polygon\n");
+        buff.append("Bounding Polygon\n");
 
         for (final Point point : codeInfo.points) {
 
@@ -172,11 +176,9 @@ public final class InfoWindow {
             buff.append(String.format("(%f, %f)%n", degX, degY));
         }
 
-        buff.append('\n');
+        buff.append("\n\n");
 
-        buff.append('\n');
-
-        buff.append("Bounds and Equations\n");
+        buff.append("Equations of Exact Region\n");
 
         for (final Equation equation : codeInfo.sinEquations) {
             buff.append(equation);

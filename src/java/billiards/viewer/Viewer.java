@@ -32,7 +32,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,12 +43,15 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
@@ -271,17 +273,29 @@ public final class Viewer {
         checkCoverButton.setOnAction(e -> {
 
             if (currentCover.isPresent()) {
-                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
-                                                                  currentCover.get());
+            	
+            	final Alert alert = new Alert(AlertType.CONFIRMATION);
 
-                // Redirect the stdout and stderr so they are printed
-                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-
-                try {
-                    builder.start().waitFor();
-                } catch (final Exception ex) {
-                    throw new RuntimeException(ex);
+                alert.setTitle("Check Cover");
+                alert.setHeaderText("Check Cover");
+                alert.setContentText("Checking a cover can take several hours or\n"
+                		+ "even days. Continue?");
+                final Optional<ButtonType> response = alert.showAndWait();
+                if (response.isPresent() && response.get() == ButtonType.OK) {
+            	
+	                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
+	                                                                  currentCover.get());
+	
+	                // Redirect the stdout and stderr so they are printed
+	                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+	                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+	
+	                try {
+	                    builder.start().waitFor();
+	                } catch (final Exception ex) {
+	                    new ErrorAlert(ex).showAndWait();
+	                    return;
+	                }
                 }
 
             } else {
@@ -410,12 +424,15 @@ public final class Viewer {
             topImageView.setOnMouseDragged(event2 -> {
                 final double finX = event2.getX();
                 final double finY = event2.getY();
-                final Line panLine = smartLine(initX, initY, finX, finY);
-                panLine.setStroke(panColor);
-                imageStack.getChildren().remove(4);
-                imageStack.getChildren().add(4, panLine);
-                imageStack.getChildren().get(4).setTranslateX((finX + initX - SIZE) / 2);
-                imageStack.getChildren().get(4).setTranslateY((finY + initY - SIZE) / 2);
+                final Optional<Line> panOpt = smartLine(initX, initY, finX, finY);
+                if (panOpt.isPresent()) {
+                	final Line panLine = panOpt.get();
+	                panLine.setStroke(panColor);
+	                imageStack.getChildren().remove(4);
+	                imageStack.getChildren().add(4, panLine);
+	                imageStack.getChildren().get(4).setTranslateX((finX + initX - SIZE) / 2);
+	                imageStack.getChildren().get(4).setTranslateY((finY + initY - SIZE) / 2);
+                }
             });
             topImageView.setOnMouseReleased(event3 -> {
                 imageStack.getChildren().remove(4);
@@ -579,18 +596,30 @@ public final class Viewer {
 
     private void zoomAction() {
         // so between 0 and pi, and min < max
-
-        final double xMin = Math.toRadians(Double.parseDouble(xMinTextField.getText()));
-        final double xMax = Math.toRadians(Double.parseDouble(xMaxTextField.getText()));
-        final double yMin = Math.toRadians(Double.parseDouble(yMinTextField.getText()));
-        final double yMax = Math.toRadians(Double.parseDouble(yMaxTextField.getText()));
+    	
+        double xMin;
+		double xMax;
+		double yMin;
+		double yMax;
+		try {
+			xMin = Math.toRadians(Double.parseDouble(xMinTextField.getText()));
+			xMax = Math.toRadians(Double.parseDouble(xMaxTextField.getText()));
+			yMin = Math.toRadians(Double.parseDouble(yMinTextField.getText()));
+			yMax = Math.toRadians(Double.parseDouble(yMaxTextField.getText()));
+		} catch (NumberFormatException e) {
+			final Alert error = new Alert(AlertType.ERROR);
+			error.setTitle("Error");
+			error.setHeaderText("Number Format Error");
+			error.setContentText("Please check the zoom fields' input");
+			error.showAndWait();
+			return;
+		}
 
         if (0 < xMin && xMin < xMax && xMax < Math.PI
          && 0 < yMin && yMin < yMax && yMax < Math.PI) {
 
         	if ((xMin == xMax) && (yMin == yMax)) {
                 final double size = map.pixelSize();
-                map.setTranslateX(xMin - (SIZE / 2) * size);
                 map.setTranslateY(yMin - (SIZE / 2) * size);
 
             } else {
@@ -779,7 +808,9 @@ public final class Viewer {
             } else if (centerBtn.isSelected()) {
                 map.scaleBy(1);
             } else {
-                throw new RuntimeException("wrong button");
+            	new ErrorAlert(new RuntimeException("Somehow, no click "
+            			+ "setting was selected.")).showAndWait();
+                return;
             }
 
             final double newRadianX = map.radianX(SIZE / 2 + 0.5);
@@ -822,7 +853,7 @@ public final class Viewer {
             }
 
             final String codeString = storage.toString();
-            final TextField lblCodeSequence = new TextField(codeString);
+            final TextField lblCodeSequence = new TextField(codeString.split(",")[0]);
             final Label codeInfo = new Label();
             codeInfo.setText(storage.type + " (" + storage.classCodeSeq.length() + "," + storage.classCodeSeq.sum() + ")");
             codeInfo.setPadding(new Insets(5, 5, 5, 0));
@@ -1340,20 +1371,20 @@ public final class Viewer {
         }
     }
 
-    private static Line smartLine(final double sX, final double sY, final double eX, final double eY) {
+    private static Optional<Line> smartLine(final double sX, final double sY, final double eX, final double eY) {
         final boolean[] problems = {sX > 0 && sX < SIZE && sY > 0 && sY < SIZE,
                                     eX > 0 && eX < SIZE && eY > 0 && eY < SIZE};
 
         if (problems[0] && problems[1]) {
             // the line is entirely inside
-            return new Line(sX, sY, eX, eY);
+            return Optional.of(new Line(sX, sY, eX, eY));
         } else if (problems[0]) {
             // the start is inside
             final Point direct = Point.unit(Point.create(sX - eX, sY - eY));
             final Point start = Point.create(sX, sY);
             final Point lineEnd = onScreenLine(start, direct);
 
-            return new Line(sX, sY, lineEnd.x, lineEnd.y);
+            return Optional.of(new Line(sX, sY, lineEnd.x, lineEnd.y));
 
         } else if (problems[1]) {
             // the end is inside
@@ -1361,9 +1392,10 @@ public final class Viewer {
             final Point start = Point.create(eX, eY);
             final Point lineStart = onScreenLine(start, direct);
 
-            return new Line(lineStart.x, lineStart.y, eX, eY);
+            return Optional.of(new Line(lineStart.x, lineStart.y, eX, eY));
         } else {
-            throw new RuntimeException("Error when making the pan line");
+            new ErrorAlert(new RuntimeException("Error when making the pan line")).showAndWait();
+            return Optional.empty();
         }
     }
 
@@ -1413,7 +1445,8 @@ public final class Viewer {
 
         } else {
             end = start;
-            throw new RuntimeException("Something went wrong in 'onScreenLine' method");
+            new ErrorAlert(new RuntimeException("Something went wrong in"
+            		+ " 'onScreenLine' method")).showAndWait();
         }
 
         return end;
