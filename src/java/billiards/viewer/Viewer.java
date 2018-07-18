@@ -42,6 +42,7 @@ import java.util.function.DoubleUnaryOperator;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -67,6 +68,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Affine;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public final class Viewer {
@@ -75,7 +77,11 @@ public final class Viewer {
     private static final double TipOpenDelay = 2;
     private static final double TipCloseDelay = 20;
 
-    private static final int SIZE = 600;
+	final static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+	// 768 is the usual hieght of a screen
+	final static double screenScale = screen.getHeight() / 1080;
+
+    private static final int SIZE = (int) (600 * screenScale);
 
     // IMPORTANT: This is the color of the 90 and 80 lines and any additional lines
     private static final Color lineColor = Color.MAGENTA;
@@ -217,7 +223,7 @@ public final class Viewer {
         zoomScaleLabel.setText("Zoom Scale:");
         zoomScaleText.setText("2");
         zoomScaleText.setTooltip(Utils.toolTip("The scale that you magnify and demagnify by"));
-        zoomScaleText.setPrefWidth(55);
+        zoomScaleText.setPrefWidth(55 * screenScale);
         zoomScaleText.setStyle(textBoxColor);
 
         backwardSquareButton.setText("Backward");
@@ -442,20 +448,20 @@ public final class Viewer {
 
         textXLabel.setText("X:");
         textXField.setEditable(false);
-        textXField.setPrefWidth(130);
+        textXField.setPrefWidth(130 * screenScale);
 
         textYLabel.setText("Y:");
         textYField.setEditable(false);
-        textYField.setPrefWidth(130);
+        textYField.setPrefWidth(130 * screenScale);
 
         // Lock
         textXLockLabel.setText("X:");
         textXLockField.setEditable(false);
-        textXLockField.setPrefWidth(130);
+        textXLockField.setPrefWidth(130 * screenScale);
 
         textYLockLabel.setText("Y:");
         textYLockField.setEditable(false);
-        textYLockField.setPrefWidth(130);
+        textYLockField.setPrefWidth(130 * screenScale);
 
         topImageView.setOnMouseMoved(event -> {
 
@@ -548,6 +554,7 @@ public final class Viewer {
 
         final HBox bpane = new HBox(10, leftVBox, imageStack);
         bpane.setAlignment(Pos.CENTER);
+        bpane.setStyle("-fx-font-size: " + 12 * screenScale + "px;");
 
         // reflect
         final Affine reflectTransform = new Affine();
@@ -557,7 +564,7 @@ public final class Viewer {
 
         // Scene
         final Scene scene = new Scene(bpane);
-
+        
         // Stage
         mainWindow.setTitle(windowTitle);
         mainWindow.setOnCloseRequest(event -> {
