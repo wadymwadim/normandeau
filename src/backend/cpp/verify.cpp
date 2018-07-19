@@ -5,20 +5,25 @@
 #include "evaluator.hpp"
 #include "progress.hpp"
 #include "verify.hpp"
+#include "region.hpp"
 
 template <template <typename> class Trig>
-bool equations_positive(const std::vector<std::pair<EqVec<Trig>, Coeff64>>& eqs, const PointQ& center, const Rational& radius, Evaluator& eval) {
+bool equations_positive(const std::vector<std::tuple<EqVec<Trig>, Coeff64, Coeff64>>& eqs, const PointQ& center, const Rational& radius, Evaluator& eval) {
 
-    for (const auto& p : eqs) {
+    for (const auto& tup : eqs) {
 
-        const auto pos = eval.is_positive(p.first, p.second, center, radius);
+        const auto& eq = std::get<0>(tup);
+        const auto bx = std::get<1>(tup);
+        const auto by = std::get<2>(tup);
+
+        const auto pos = eval.is_positive(eq, bx + by, center, radius);
 
         if (!pos) {
-            std::cout << "failure: not positive" << std::endl;
-            std::cout << "f(x, y) = " << p.first << std::endl;
-            std::cout << "bound = " << p.second << std::endl;
-            std::cout << "radius = " << radius << std::endl;
+            std::cout << "Failure: not positive" << std::endl;
+            std::cout << "f(x, y) = " << eq << std::endl;
+            std::cout << "bound = " << (bx + by) << std::endl;
             std::cout << "center = " << center << std::endl;
+            std::cout << "radius = " << radius << std::endl;
             return false;
         }
     }
@@ -26,11 +31,37 @@ bool equations_positive(const std::vector<std::pair<EqVec<Trig>, Coeff64>>& eqs,
     return true;
 }
 
-// the first is if the square was
+template <template <typename> class Trig>
+bool equations_positive(const std::vector<std::tuple<EqVec<Trig>, Coeff64, Coeff64>>& eqs,
+                        const PointQ& center, const Rational& rx, const Rational& ry, Evaluator& eval) {
+
+    for (const auto& tup : eqs) {
+
+        const auto& eq = std::get<0>(tup);
+        const auto bx = std::get<1>(tup);
+        const auto by = std::get<2>(tup);
+
+        const auto pos = eval.is_positive(eq, bx, by, center, rx, ry);
+
+        if (!pos) {
+            std::cout << "Failure: not positive" << std::endl;
+            std::cout << "f(x, y) = " << eq << std::endl;
+            std::cout << "bx = " << bx << std::endl;
+            std::cout << "by = " << by << std::endl;
+            std::cout << "center = " << center << std::endl;
+            std::cout << "rx = " << rx << std::endl;
+            std::cout << "ry = " << ry << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static bool covers_square(const StableInfo& info, const ClosedRectangleQ& square, const uint32_t bits) {
 
     if (!geometry::subset(square, info.polygon)) {
-        std::cerr << "failure: square is not a subset of polygon" << std::endl;
+        std::cout << "Failure: square is not a subset of polygon" << std::endl;
         return false;
     }
 
@@ -41,22 +72,109 @@ static bool covers_square(const StableInfo& info, const ClosedRectangleQ& square
     const Rational radius = square.width() / 2;
 
     if (!equations_positive(info.sines, center, radius, eval)) {
-        std::cerr << "not all sines positive" << std::endl;
+        std::cout << "not all sines positive" << std::endl;
         return false;
     }
 
     if (!equations_positive(info.cosines, center, radius, eval)) {
-        std::cerr << "not all cosines positive" << std::endl;
+        std::cout << "not all cosines positive" << std::endl;
         return false;
     }
 
     return true;
 }
 
-#if 0
-static bool triple_intersection(const TriplePair& triple_pair, const TripleInfo& info, const ClosedRectangleQ& square) {
+static PointQ find_intersection(const PointQ& corner0, const PointQ& corner1, const LinComArrZ<XYEta>& line) {
 
-    const auto line = triple_pair.unstable.sequence.constraint();
+    // a*x + b*y + c = 0
+    // => x = -(b*y + c) / a
+    // => y = -(a*x + c) / b
+
+    const auto a = line.coeff(XYEta::X);
+    const auto b = line.coeff(XYEta::Y);
+    const auto c = line.coeff(XYEta::Eta);
+
+    if (corner0.x == corner1.x) {
+        // vertical line, solve for y
+        Rational y = -(a * corner0.x + c) / b;
+        return {corner0.x, std::move(y)};
+
+    } else if (corner0.y == corner1.y) {
+        // horizontal line, solve for x
+        Rational x = -(b * corner0.y + c) / a;
+        return {std::move(x), corner0.y};
+    } else {
+        std::ostringstream err{};
+        err << "find_intersection: invalid points: " << corner0 << ", " << corner1;
+        throw std::runtime_error(err.str());
+    }
+}
+
+struct CenterRadius final {
+
+    PointQ center;
+    Rational rx;
+    Rational ry;
+
+    explicit CenterRadius(PointQ center_, Rational rx_, Rational ry_) :
+        center{std::move(center_)},
+        rx{std::move(rx_)},
+        ry{std::move(ry_)} {}
+};
+
+static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& points) {
+
+    if (points.empty()) {
+        return boost::none;
+    }
+
+    Rational x_min = points.at(0).x;
+    Rational x_max = points.at(0).x;
+
+    Rational y_min = points.at(0).y;
+    Rational y_max = points.at(0).y;
+
+    for (size_t i = 1; i < points.size(); ++i) {
+        const auto& point = points.at(i);
+
+        if (point.x < x_min) {
+            x_min = point.x;
+        } else if (point.x > x_max) {
+            x_max = point.x;
+        }
+
+        if (point.y < y_min) {
+            y_min = point.y;
+        } else if (point.y > y_max) {
+            y_max = point.y;
+        }
+    }
+
+    Rational rx = (x_max - x_min) / 2;
+    Rational ry = (y_max - y_min) / 2;
+
+    Rational cx = x_min + rx;
+    Rational cy = y_min + ry;
+
+    return CenterRadius{PointQ{std::move(cx), std::move(cy)}, std::move(rx), std::move(ry)};
+}
+
+struct TripleCenterRadius final {
+
+    boost::optional<CenterRadius> stable_neg;
+    boost::optional<CenterRadius> unstable;
+    boost::optional<CenterRadius> stable_pos;
+
+    explicit TripleCenterRadius(boost::optional<CenterRadius> stable_neg_,
+                                boost::optional<CenterRadius> unstable_,
+                                boost::optional<CenterRadius> stable_pos_) :
+        stable_neg{std::move(stable_neg_)},
+        unstable{std::move(unstable_)},
+        stable_pos{std::move(stable_pos_)} {}
+};
+
+static boost::optional<TripleCenterRadius>
+triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const ClosedRectangleQ& square) {
 
     // TODO also do periodic check. That's important too
 
@@ -65,131 +183,162 @@ static bool triple_intersection(const TriplePair& triple_pair, const TripleInfo&
                                          square.upper_right(),
                                          square.upper_left()}};
 
-    const std::array<int, 4> signs{}
+    const auto size = corners.size();
+
+    std::array<Sign, 4> signs{};
+    for (size_t i = 0; i < size; ++i) {
+        signs.at(i) = line_sign_at_point(line, corners.at(i));
+    }
 
     std::vector<PointQ> positives{}; // 0-4 points
     std::vector<PointQ> zeros{};     // 0, 1, or 2 points
     std::vector<PointQ> negatives{}; // 0-4 points
 
-    for (const auto& corner : corners) {
-        const auto sign = line_sign_at_point(line, corner);
+    for (size_t i = 0; i < size; ++i) {
 
-        // More case analysis here
-        if (sign > 0) {
-            positives.push_back(corner);
-        } else if (sign == 0) {
-            zeros.push_back(corner)
-        } else if (sign < 0) {
-            negatives.push_back(corner);
+        const auto& corner0 = corners.at(i);
+        const auto& corner1 = corners.at((i + 1) % size);
+
+        const auto sign0 = signs.at(i);
+        const auto sign1 = signs.at((i + 1) % size);
+
+        if (sign0 == Sign::Neg && sign1 == Sign::Neg) {
+            negatives.push_back(corner0);
+
+        } else if (sign0 == Sign::Neg && sign1 == Sign::Zero) {
+            negatives.push_back(corner0);
+
+        } else if (sign0 == Sign::Neg && sign1 == Sign::Pos) {
+            negatives.push_back(corner0);
+
+            zeros.push_back(find_intersection(corner0, corner1, line));
+
+        } else if (sign0 == Sign::Zero && sign1 == Sign::Neg) {
+            zeros.push_back(corner0);
+
+        } else if (sign0 == Sign::Zero && sign1 == Sign::Zero) {
+            zeros.push_back(corner0);
+
+        } else if (sign0 == Sign::Zero && sign1 == Sign::Pos) {
+            zeros.push_back(corner0);
+
+        } else if (sign0 == Sign::Pos && sign1 == Sign::Neg) {
+            positives.push_back(corner0);
+
+            zeros.push_back(find_intersection(corner0, corner1, line));
+
+        } else if (sign0 == Sign::Pos && sign1 == Sign::Zero) {
+            positives.push_back(corner0);
+
+        } else if (sign0 == Sign::Pos && sign1 == Sign::Pos) {
+            positives.push_back(corner0);
         } else {
-            throw std::runtime_error("big problem");
+            std::ostringstream err{};
+            err << "triple_intersection: unknown signs " << static_cast<size_t>(sign0) << ", " << static_cast<size_t>(sign1);
+            throw std::runtime_error(err.str());
         }
     }
 
-    // all positives must be inside stable_pos polygon
-    // zeros must be within the segment
-    // ditto for negatives
-    // zeros must be in closure of polygons
+    if (!negatives.empty()) {
 
-    // then we find the radius's and midpoints that we use in the later calculations
-}
+        // Each negative point must be strictly inside the negative polygon, and
+        for (const auto& point : negatives) {
+            if (!geometry::element(point, info.stable_neg_info.polygon)) {
+                return boost::none;
+            }
+        }
 
-static bool covers_square(const TripleInfo& info, const ClosedRectangleQ& square, const uint32_t bits) {
-
-    if (!triple_geometry(info, square)) {
-        return false;
+        // Aaaaaaand all zero points must be inside polygon or on boundary
+        // Still have to do that
     }
 
-    // TODO: really we have the intersection of the line with the square, and then check if that
-    // is a subset of the segment
-    // Likewise we have the > 0 intersection with the square, then check that that is a subset
-    // of the bounding polygon
-    // And ditto for the < 0 intersection.
-    // Need < 0 corners, intersection points, and > 0 corners. We can do all those at once.
+    if (!zeros.empty()) {
+
+        for (const auto& point : zeros) {
+            if (!geometry::element(point, info.unstable_info.segment)) {
+                return boost::none;
+            }
+
+        }
+
+    }
+
+    for (const auto& point : positives) {
+        if (!geometry::element(point, info.stable_pos_info.polygon)) {
+            // other false thing
+            return boost::none;
+        }
+    }
+    // TODO also need to check some other junk
+
+    // TODO we need to add the zeros for the negs and pos's too
+    auto stable_neg = find_center_radius(negatives);
+    auto unstable = find_center_radius(zeros);
+    auto stable_pos = find_center_radius(positives);
+
+    return TripleCenterRadius{std::move(stable_neg), std::move(unstable), std::move(stable_pos)};
+}
+
+static bool covers_square(const TripleInfo& info, const LinComArrZ<XYEta>& line, const ClosedRectangleQ& square, const uint32_t bits) {
+
+    const auto geo = triple_intersection(info, line, square);
+
+    if (!geo) {
+        return false;
+    }
 
     Evaluator eval{bits};
 
-    if (midpoint) {
+    // Stable Neg
+    if (geo->stable_neg) {
 
-        // TODO we could also use a smaller square in this case too
-        // TODO we also need to replace the intersects with a different check, one that
-        // checks if the region we are looking at is a subset of the polygon
-        const auto stable_pos_works = //intersects(square, info.stable_pos_info.polygon) &&
-            all_positive(info.stable_pos_info.sines, center, radius, eval) &&
-            all_positive(info.stable_pos_info.cosines, center, radius, eval);
+        const auto& cr = *geo->stable_neg;
 
-        const auto unstable_works =
-            all_positive(info.unstable_info.sines, *midpoint, radius, eval) &&
-            all_positive(info.unstable_info.cosines, *midpoint, radius, eval);
+        if (!equations_positive(info.stable_neg_info.sines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all sines positive" << std::endl;
+            return false;
+        }
 
-        // We should do a check. If the square intersects the bounding polygon of either of the regions,
-        // then we need to check that region. If it does not, then we don't need to check. This deals
-        // with subtle issues like when the square is right on the side of a bounding polygon, but
-        // strictly speaking don't intersect, since the bounding polygon is open.
-        // We will leave it like this for now.
-
-        // Normally, we need the square to be a subset of the bounding polygon. Is that a problem here?
-
-        // And a smaller square here too
-        const auto stable_neg_works = //intersects(square, info.stable_neg_info.polygon) &&
-            all_positive(info.stable_neg_info.sines, center, radius, eval) &&
-            all_positive(info.stable_neg_info.cosines, center, radius, eval);
-
-        return stable_pos_works && unstable_works && stable_neg_works;
-    }
-
-    return false;
-
-    // TODO the square must be contained within the corner polygon, which we haven't looked at yet
-    // TODO also look at the corner polygon for the other ones as well
-
-    if (!special_intersect(square, info.unstable_info.segment)) {
-        std::cerr << "square does not intersect line segment" << std::endl;
-        return false;
-    }
-
-    const auto inter = intersection(square, info.unstable_info.segment);
-    const auto midpoint_rat = inter->midpoint();
-
-    const geometry::Point<VarInterval> midpoint{VarInterval{midpoint_rat.x} * half_pi, VarInterval{midpoint_rat.y} * half_pi};
-
-    // Stable Pos
-    if (!all_equations_positive(info.stable_pos_info.sines, center, radius)) {
-        std::cerr << "not all sines positive" << std::endl;
-        return false;
-    }
-
-    if (!all_equations_positive(info.stable_pos_info.cosines, center, radius)) {
-        std::cerr << "not all cosines positive" << std::endl;
-        return false;
+        if (!equations_positive(info.stable_neg_info.cosines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all cosines positive" << std::endl;
+            return false;
+        }
     }
 
     // Unstable
-    if (!all_equations_positive(info.unstable_info.sines, midpoint, radius)) {
-        std::cerr << "not all sines positive" << std::endl;
-        return false;
+    if (geo->unstable) {
+
+        const auto& cr = *geo->unstable;
+
+        if (!equations_positive(info.unstable_info.sines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all sines positive" << std::endl;
+            return false;
+        }
+
+        if (!equations_positive(info.unstable_info.cosines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all cosines positive" << std::endl;
+            return false;
+        }
     }
 
-    if (!all_equations_positive(info.unstable_info.cosines, midpoint, radius)) {
-        std::cerr << "not all cosines positive" << std::endl;
-        return false;
-    }
+    // Stable Pos
+    if (geo->stable_pos) {
 
-    // Stable Neg
-    if (!all_equations_positive(info.stable_neg_info.sines, center, radius)) {
-        std::cerr << "not all sines positive" << std::endl;
-        return false;
-    }
+        const auto& cr = *geo->stable_pos;
 
-    if (!all_equations_positive(info.stable_neg_info.cosines, center, radius)) {
-        std::cerr << "not all cosines positive" << std::endl;
-        return false;
+        if (!equations_positive(info.stable_pos_info.sines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all sines positive" << std::endl;
+            return false;
+        }
+
+        if (!equations_positive(info.stable_pos_info.cosines, cr.center, cr.rx, cr.ry, eval)) {
+            std::cout << "not all cosines positive" << std::endl;
+            return false;
+        }
     }
 
     return true;
 }
-
-#endif
 
 struct CountLeaves final : public boost::static_visitor<uint64_t> {
 
@@ -244,7 +393,7 @@ class CoverVerifier final : public boost::static_visitor<bool> {
         const auto inter = geometry::intersects(square, polygon);
 
         if (inter) {
-            std::cout << "Failure: empty intersects polygon" << std::endl;
+            std::cout << "Failure: empty square intersects polygon" << std::endl;
         }
 
         ++progress;
@@ -254,7 +403,7 @@ class CoverVerifier final : public boost::static_visitor<bool> {
 
     bool operator()(const cover::Single& single) const {
 
-        const auto stable_info = single_infos.at(single.index).second;
+        const auto& stable_info = single_infos.at(single.index).second;
 
         const auto cover = covers_square(stable_info, square, bits);
 
@@ -263,20 +412,18 @@ class CoverVerifier final : public boost::static_visitor<bool> {
         return cover;
     }
 
-    bool operator()(const cover::Triple&) const {
+    bool operator()(const cover::Triple& triple) const {
+
+        const auto& triple_pair = triple_infos.at(triple.index).first;
+        const auto& triple_info = triple_infos.at(triple.index).second;
+
+        const auto line = triple_pair.unstable.sequence.constraint(triple_pair.unstable.angles);
+
+        const auto cover = covers_square(triple_info, line, square, bits);
 
         ++progress;
 
-        return true;
-#if 0
-        const auto triple_info = triple_infos.at(triple.index).second;
-
-        if (covers_square(triple_info, square, bits)) {
-            return true;
-        } else {
-            return false;
-        }
-#endif
+        return cover;
     }
 
     bool operator()(const cover::Divide& divide) const {

@@ -25,20 +25,29 @@ class Evaluator {
     ~Evaluator();
 
     template <template <typename> class Trig>
-    bool is_positive(const EqMap<Trig>& eq, const Coeff64 bx, const Coeff64 by,
+    bool is_positive(const EqVec<Trig>& eq, const Coeff64 bound,
+                     const PointQ& center, const Rational& radius);
+
+    template <template <typename> class Trig>
+    bool is_positive(const EqVec<Trig>& eq, const Coeff64 bx, const Coeff64 by,
                      const PointQ& center, const Rational& rx, const Rational& ry);
 
     template <template <typename> class Trig>
-    bool is_positive(const EqVec<Trig>& eq, const Coeff64 bound,
-                     const PointQ& center, const Rational& radius);
+    bool is_positive(const EqMap<Trig>& eq, const Coeff64 bx, const Coeff64 by,
+                     const PointQ& center, const Rational& rx, const Rational& ry);
 };
-
-extern template bool Evaluator::is_positive(const EqMap<Sin>& eq, const Coeff64 bx, const Coeff64 by,
-                                            const PointQ& center, const Rational& rx, const Rational& ry);
-extern template bool Evaluator::is_positive(const EqMap<Cos>& eq, const Coeff64 bx, const Coeff64 by,
-                                            const PointQ& center, const Rational& rx, const Rational& ry);
 
 extern template bool Evaluator::is_positive(const EqVec<Sin>& eq, const Coeff64 bound,
                                             const PointQ& center, const Rational& radius);
 extern template bool Evaluator::is_positive(const EqVec<Cos>& eq, const Coeff64 bound,
                                             const PointQ& center, const Rational& radius);
+
+extern template bool Evaluator::is_positive(const EqVec<Sin>& eq, const Coeff64 bx, const Coeff64 by,
+                                            const PointQ& center, const Rational& rx, const Rational& ry);
+extern template bool Evaluator::is_positive(const EqVec<Cos>& eq, const Coeff64 bx, const Coeff64 by,
+                                            const PointQ& center, const Rational& rx, const Rational& ry);
+
+extern template bool Evaluator::is_positive(const EqMap<Sin>& eq, const Coeff64 bx, const Coeff64 by,
+                                            const PointQ& center, const Rational& rx, const Rational& ry);
+extern template bool Evaluator::is_positive(const EqMap<Cos>& eq, const Coeff64 bx, const Coeff64 by,
+                                            const PointQ& center, const Rational& rx, const Rational& ry);

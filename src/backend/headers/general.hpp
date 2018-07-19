@@ -98,11 +98,13 @@ LinComArrZ<XYPi> xyz_to_xypi(const XYZ symbol);
 
 LinComArrZ<XYEtaPhi> xyz_to_xyetaphi(const XYZ symbol);
 
-template <template <typename> class Trig>
-std::pair<Coeff64, Coeff64> gradient_bounds(const EqMap<Trig>& eq);
+template <typename Eq>
+std::pair<Coeff64, Coeff64> gradient_bounds(const Eq& eq);
 
 extern template std::pair<Coeff64, Coeff64> gradient_bounds(const EqMap<Sin>& eq);
 extern template std::pair<Coeff64, Coeff64> gradient_bounds(const EqMap<Cos>& eq);
+extern template std::pair<Coeff64, Coeff64> gradient_bounds(const EqVec<Sin>& eq);
+extern template std::pair<Coeff64, Coeff64> gradient_bounds(const EqVec<Cos>& eq);
 
 std::array<ClosedSegmentQ, 2> subdivide(const ClosedSegmentQ& seg);
 std::array<ClosedRectangleQ, 4> subdivide(const ClosedRectangleQ& rect);

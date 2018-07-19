@@ -72,11 +72,11 @@ LinComArrZ<XYEtaPhi> xyz_to_xyetaphi(const XYZ symbol) {
     throw std::runtime_error(invalid_enum_value("XYZ", symbol));
 }
 
-// These are the gradient bounds used when coloring the regions
 // Here would be the perfect place to use unsigned ints, but we don't have overflow checking for
 // them sadly
-template <template <typename> class Trig>
-std::pair<Coeff64, Coeff64> gradient_bounds(const LinComMapZ<Trig<LinComArrZ<XY>>>& eq) {
+template <typename Eq>
+std::pair<Coeff64, Coeff64> gradient_bounds(const Eq& eq) {
+
     Coeff64 sum_x = 0;
     Coeff64 sum_y = 0;
 
@@ -95,8 +95,10 @@ std::pair<Coeff64, Coeff64> gradient_bounds(const LinComMapZ<Trig<LinComArrZ<XY>
     return {sum_x, sum_y};
 }
 
-template std::pair<Coeff64, Coeff64> gradient_bounds(const LinComMapZ<Sin<LinComArrZ<XY>>>& eq);
-template std::pair<Coeff64, Coeff64> gradient_bounds(const LinComMapZ<Cos<LinComArrZ<XY>>>& eq);
+template std::pair<Coeff64, Coeff64> gradient_bounds(const EqMap<Sin>& eq);
+template std::pair<Coeff64, Coeff64> gradient_bounds(const EqMap<Cos>& eq);
+template std::pair<Coeff64, Coeff64> gradient_bounds(const EqVec<Sin>& eq);
+template std::pair<Coeff64, Coeff64> gradient_bounds(const EqVec<Cos>& eq);
 
 // Split the segment in half
 std::array<ClosedSegmentQ, 2> subdivide(const ClosedSegmentQ& seg) {

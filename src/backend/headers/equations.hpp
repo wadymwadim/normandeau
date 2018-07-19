@@ -58,20 +58,20 @@ struct CodeInfo final {
 struct StableInfo {
 
     OpenConvexPolygonQ polygon;
-    std::vector<std::pair<EqVec<Sin>, Coeff64>> sines;
-    std::vector<std::pair<EqVec<Cos>, Coeff64>> cosines;
+    std::vector<std::tuple<EqVec<Sin>, Coeff64, Coeff64>> sines;
+    std::vector<std::tuple<EqVec<Cos>, Coeff64, Coeff64>> cosines;
 
     explicit StableInfo(const CodeInfo& code_info)
         : polygon{code_info.points} {
 
         for (const auto& equation : code_info.sin_equations) {
-            const auto gbound = gradient_bound(equation);
-            sines.emplace_back(map_to_vec(equation), gbound);
+            const auto gbounds = gradient_bounds(equation);
+            sines.emplace_back(map_to_vec(equation), gbounds.first, gbounds.second);
         }
 
         for (const auto& equation : code_info.cos_equations) {
-            const auto gbound = gradient_bound(equation);
-            cosines.emplace_back(map_to_vec(equation), gbound);
+            const auto gbounds = gradient_bounds(equation);
+            cosines.emplace_back(map_to_vec(equation), gbounds.first, gbounds.second);
         }
     }
 };
@@ -79,20 +79,20 @@ struct StableInfo {
 struct UnstableInfo {
 
     OpenSegmentQ segment;
-    std::vector<std::pair<EqVec<Sin>, Coeff64>> sines;
-    std::vector<std::pair<EqVec<Cos>, Coeff64>> cosines;
+    std::vector<std::tuple<EqVec<Sin>, Coeff64, Coeff64>> sines;
+    std::vector<std::tuple<EqVec<Cos>, Coeff64, Coeff64>> cosines;
 
     explicit UnstableInfo(const CodeInfo& code_info)
         : segment{code_info.points.at(0), code_info.points.at(1)} {
 
         for (const auto& equation : code_info.sin_equations) {
-            const auto gbound = gradient_bound(equation);
-            sines.emplace_back(map_to_vec(equation), gbound);
+            const auto gbounds = gradient_bounds(equation);
+            sines.emplace_back(map_to_vec(equation), gbounds.first, gbounds.second);
         }
 
         for (const auto& equation : code_info.cos_equations) {
-            const auto gbound = gradient_bound(equation);
-            cosines.emplace_back(map_to_vec(equation), gbound);
+            const auto gbounds = gradient_bounds(equation);
+            cosines.emplace_back(map_to_vec(equation), gbounds.first, gbounds.second);
         }
     }
 };

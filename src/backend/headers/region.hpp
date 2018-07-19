@@ -3,6 +3,8 @@
 #include "code_sequence.hpp"
 #include "general.hpp"
 
+Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point);
+
 class RationalLineSegment final {
 
   public:

@@ -49,7 +49,7 @@ static PointQ intersection(const LinComArrZ<XYEta>& line1, const LinComArrZ<XYEt
     return {first, second};
 }
 
-static Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) {
+Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) {
 
     // c1 * x + c2 * y + c3 * eta
     const auto x_coeff = equation.coeff<XYEta::X>();
