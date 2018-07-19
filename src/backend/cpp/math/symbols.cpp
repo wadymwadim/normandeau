@@ -38,28 +38,6 @@ std::ostream& operator<<(std::ostream& os, const XYPi sym) {
     throw std::runtime_error(invalid_enum_value("XYPi", sym));
 }
 
-std::ostream& operator<<(std::ostream& os, const XEta sym) {
-    switch (sym) {
-    case XEta::X:
-        return os << 'x';
-    case XEta::Eta:
-        return os << "eta";
-    }
-
-    throw std::runtime_error(invalid_enum_value("XEta", sym));
-}
-
-std::ostream& operator<<(std::ostream& os, const YEta sym) {
-    switch (sym) {
-    case YEta::Y:
-        return os << 'y';
-    case YEta::Eta:
-        return os << "eta";
-    }
-
-    throw std::runtime_error(invalid_enum_value("YEta", sym));
-}
-
 std::ostream& operator<<(std::ostream& os, const XYEta sym) {
     switch (sym) {
     case XYEta::X:

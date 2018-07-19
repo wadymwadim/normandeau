@@ -47,30 +47,6 @@ struct Enum<XYPi> final {
 
 std::ostream& operator<<(std::ostream& os, const XYPi sym);
 
-enum class XEta : size_t {
-    X,
-    Eta, // eta = pi/2
-};
-
-template <>
-struct Enum<XEta> final {
-    static constexpr size_t size = 2;
-};
-
-std::ostream& operator<<(std::ostream& os, const XEta sym);
-
-enum class YEta : size_t {
-    Y,
-    Eta, // eta = pi/2
-};
-
-template <>
-struct Enum<YEta> final {
-    static constexpr size_t size = 2;
-};
-
-std::ostream& operator<<(std::ostream& os, const YEta sym);
-
 enum class XYEta : size_t {
     X,
     Y,
