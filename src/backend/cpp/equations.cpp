@@ -226,11 +226,8 @@ static CodeInfo calculate_stable_code_info(const CodePair& code_pair, const Code
 
     const auto code_angles = code_sequence.angles(initial_angles);
 
-    // TODO try zipping the code numbers and code angles together. That might make the
-    // calculations and such easier
     const auto& code_numbers = code_sequence.numbers();
 
-    // TODO throw this in a calculate_polygon function
     const auto opt_polygon = calculate_bounding_polygon(code_numbers, code_angles);
 
     const auto get_vertices = [](const auto& rat_pair) {
@@ -251,9 +248,6 @@ static CodeInfo calculate_stable_code_info(const CodePair& code_pair, const Code
     const Unfolding unfold{code_numbers, code_angles};
 
     // Some of the generated equations are duplicates, so make sure they are in a std::set
-    // TODO we could do some sort of rigourous refine as the equations are generated. That
-    // would be better than generate them all first and then filtering
-    // Another issue is the integer size. Could we use int32_t to save space?
     Curves equations{};
     if (code_type == CodeType::OSO) {
 
@@ -279,8 +273,7 @@ static CodeInfo calculate_stable_code_info(const CodePair& code_pair, const Code
 
     } else {
         std::ostringstream err{};
-        err << "unstable code " << code_sequence << " of type "
-            << code_type << " passed to calculate_stable_code_info";
+        err << "calculate_stable_code_info: unstable code " << code_sequence << " of type " << code_type;
         throw std::runtime_error(err.str());
     }
 
@@ -294,13 +287,10 @@ static CodeInfo calculate_unstable_code_info(const CodePair& code_pair, const Co
 
     const auto code_angles = code_sequence.angles(initial_angles);
 
-    // TODO try zipping the code numbers and code angles together. That might make the
-    // calculations and such easier
     const auto& code_numbers = code_sequence.numbers();
 
     const auto constraint = code_sequence.constraint(initial_angles);
 
-    // TODO throw this in a calculate_bounding_line_segment function
     const auto rational_segment = calculate_bounding_line_segment(code_numbers, code_angles, constraint);
 
     const std::vector<PointQ> segment{rational_segment->point0, rational_segment->point1};
@@ -316,13 +306,10 @@ static CodeInfo calculate_unstable_code_info(const CodePair& code_pair, const Co
     const Unfolding unfold{code_numbers, code_angles};
 
     // Some of the generated equations are duplicates, so make sure they are in a std::set
-    // TODO we could do some sort of rigourous refine as the equations are generated. That
-    // would be better than generate them all first and then filtering
     Curves equations{};
 
     if (code_type == CodeType::CNS) {
 
-        // TODO throw this in a calculate_curves function
         const auto code_angles_eta = transform(code_angles, xyz_to_xyeta);
 
         const auto shooting_vector = shooting_vector_closed(code_sequence, code_angles_eta);
@@ -335,8 +322,7 @@ static CodeInfo calculate_unstable_code_info(const CodePair& code_pair, const Co
 
     } else {
         std::ostringstream err{};
-        err << "stable code " << code_sequence << " of type "
-            << code_type << " passed to calculate_unstable_code_info";
+        err << "calculate_unstable_code_info: stable code " << code_sequence << " of type " << code_type;
         throw std::runtime_error(err.str());
     }
 

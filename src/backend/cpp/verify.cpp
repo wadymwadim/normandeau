@@ -122,7 +122,8 @@ struct CenterRadius final {
         ry{std::move(ry_)} {}
 };
 
-static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& primary, const std::vector<PointQ>& secondary) {
+static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& primary,
+                                                        const std::vector<PointQ>& secondary) {
 
     if (primary.empty()) {
         return boost::none;
@@ -150,7 +151,7 @@ static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ
         }
     }
 
-    // Now do the same for the zeros
+    // Now do the same for the secondary
     for (const auto& point : secondary) {
 
         if (point.x < x_min) {
@@ -255,37 +256,37 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
         }
     }
 
-    if (!negatives.empty()) {
-
-        // Each negative point must be strictly inside the negative polygon, and
-        for (const auto& point : negatives) {
-            if (!geometry::element(point, info.stable_neg_info.polygon)) {
-                return boost::none;
-            }
+    // Each negative point must be strictly inside the negative polygon, and
+    for (const auto& point : negatives) {
+        if (!geometry::element(point, info.stable_neg_info.polygon)) {
+            return boost::none;
         }
+    }
+
+    if (!negatives.empty()) {
 
         // Aaaaaaand all zero points must be inside polygon or on boundary
         // Still have to do that
     }
 
-    if (!zeros.empty()) {
-
-        for (const auto& point : zeros) {
-            if (!geometry::element(point, info.unstable_info.segment)) {
-                return boost::none;
-            }
-
+    // Each zero point must be inside the line segment
+    for (const auto& point : zeros) {
+        if (!geometry::element(point, info.unstable_info.segment)) {
+            return boost::none;
         }
 
     }
 
+    if (!positives.empty()) {
+        // And check the positive points here too
+    }
+
+    // All positive points must be strictly inside the polygon
     for (const auto& point : positives) {
         if (!geometry::element(point, info.stable_pos_info.polygon)) {
-            // other false thing
             return boost::none;
         }
     }
-    // TODO also need to check some other junk
 
     auto stable_neg = find_center_radius(negatives, zeros);
     auto unstable = find_center_radius(zeros, {});
