@@ -39,7 +39,7 @@ public final class InfoWindow {
     private final HBox inputHBox = new HBox();
     private final TextField codeNumbersTextField = new TextField();
 
-    public InfoWindow(final String windowTitle) {
+    public InfoWindow(final String windowTitle, final double screenScale) {
         stage.setScene(scene);
         stage.setTitle(windowTitle);
         stage.setOnCloseRequest(event -> stage.close());
@@ -60,8 +60,9 @@ public final class InfoWindow {
 
         showButton.setText("Show");
         showButton.setOnAction(event -> showInfo());
-
+        
         root.getChildren().addAll(inputHBox, text);
+		root.setStyle("-fx-font-size: " + 12 * screenScale + "px;");
         root.setSpacing(10);
         root.setPadding(new Insets(10));
     }

@@ -28,7 +28,9 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
 
 import java.awt.MouseInfo;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -257,9 +259,10 @@ public final class Viewer {
                                             + " a code sequence"));
         Utils.colorButton(infoButton, Color.LIGHTPINK, clickColor);
 
-        infoButton.setOnAction(event -> new InfoWindow(windowTitle).show());
+        infoButton.setOnAction(event -> new InfoWindow(windowTitle, screenScale).show());
 
         loadCoverBtn.setText("Load Cover");
+        Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
             final DirectoryChooser chooser = new DirectoryChooser();
             chooser.setTitle("Choose a Cover Directory");
@@ -276,8 +279,9 @@ public final class Viewer {
 
         // TODO what do we do about this?
         checkCoverButton.setText("Check Cover");
+        Utils.colorButton(checkCoverButton, Color.LIGHTPINK, clickColor);
         checkCoverButton.setOnAction(e -> {
-
+        	
             if (currentCover.isPresent()) {
             	
             	final Alert alert = new Alert(AlertType.CONFIRMATION);
@@ -288,16 +292,38 @@ public final class Viewer {
                 		+ "even days. Continue?");
                 final Optional<ButtonType> response = alert.showAndWait();
                 if (response.isPresent() && response.get() == ButtonType.OK) {
-            	
-	                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
-	                                                                  currentCover.get());
-	
-	                // Redirect the stdout and stderr so they are printed
-	                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-	                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-	
-	                try {
-	                    builder.start().waitFor();
+                	
+                	try {
+		                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
+		                                                                  currentCover.get());
+		                // Redirect the stdout and stderr so they are printed
+		                // builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		                // builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+		                
+		                final Process process = builder.start();
+				        process.waitFor();
+		                
+		                final BufferedReader reader = 
+		                		new BufferedReader(new InputStreamReader(process.getInputStream()));
+				        final StringBuilder strB = new StringBuilder();
+				        String line = null;
+				        while ((line = reader.readLine()) != null) {
+				        	strB.append(line);
+				        	strB.append("\n");
+				        }
+				        String output = strB.toString();
+				        
+				        BufferedReader readerErr = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				        StringBuilder strErr = new StringBuilder();
+				        String lineErr = null;
+				        while ((lineErr = readerErr.readLine()) != null) {
+				        	strErr.append(lineErr);
+				        	strErr.append("\n");
+				        }
+				        String error = strErr.toString();
+				        
+				        new Console(windowTitle, screenScale, output + "\n" + error).show();
+		                
 	                } catch (final Exception ex) {
 	                    new ErrorAlert(ex).showAndWait();
 	                    return;
@@ -307,7 +333,13 @@ public final class Viewer {
             } else {
                 // need to have some sort of message here, or just not have the button
                 // highlighted unless the cover is there
-                System.out.println("No cover loaded");
+            	final Alert alert = new Alert(AlertType.INFORMATION);
+
+                alert.setTitle("Cover");
+                alert.setHeaderText("No cover loaded");
+                alert.setContentText("Please load a cover before pressing this button.");
+                
+                alert.showAndWait();
             }
         });
 
@@ -864,7 +896,7 @@ public final class Viewer {
             final Label codeInfo = new Label();
             codeInfo.setText(storage.type + " (" + storage.classCodeSeq.length() + "," + storage.classCodeSeq.sum() + ")");
             codeInfo.setPadding(new Insets(5, 5, 5, 0));
-            lblCodeSequence.setPrefWidth(100);
+            lblCodeSequence.setPrefWidth(100 * screenScale);
             lblCodeSequence.setEditable(false);
 
             drawCBox.setOnAction(event -> {
@@ -1189,7 +1221,7 @@ public final class Viewer {
                         try {
                             pixelWriter.setColor(i, j, colorBound);
                         } catch (final IndexOutOfBoundsException e) {
-                            System.out.println("i: " + i + "  j: " + j);
+                            // do nothing
                         }
 
                     } else {
