@@ -122,20 +122,36 @@ struct CenterRadius final {
         ry{std::move(ry_)} {}
 };
 
-static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& points) {
+static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& primary, const std::vector<PointQ>& secondary) {
 
-    if (points.empty()) {
+    if (primary.empty()) {
         return boost::none;
     }
 
-    Rational x_min = points.at(0).x;
-    Rational x_max = points.at(0).x;
+    Rational x_min = primary.at(0).x;
+    Rational x_max = primary.at(0).x;
 
-    Rational y_min = points.at(0).y;
-    Rational y_max = points.at(0).y;
+    Rational y_min = primary.at(0).y;
+    Rational y_max = primary.at(0).y;
 
-    for (size_t i = 1; i < points.size(); ++i) {
-        const auto& point = points.at(i);
+    for (size_t i = 1; i < primary.size(); ++i) {
+        const auto& point = primary.at(i);
+
+        if (point.x < x_min) {
+            x_min = point.x;
+        } else if (point.x > x_max) {
+            x_max = point.x;
+        }
+
+        if (point.y < y_min) {
+            y_min = point.y;
+        } else if (point.y > y_max) {
+            y_max = point.y;
+        }
+    }
+
+    // Now do the same for the zeros
+    for (const auto& point : secondary) {
 
         if (point.x < x_min) {
             x_min = point.x;
@@ -271,10 +287,9 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
     }
     // TODO also need to check some other junk
 
-    // TODO we need to add the zeros for the negs and pos's too
-    auto stable_neg = find_center_radius(negatives);
-    auto unstable = find_center_radius(zeros);
-    auto stable_pos = find_center_radius(positives);
+    auto stable_neg = find_center_radius(negatives, zeros);
+    auto unstable = find_center_radius(zeros, {});
+    auto stable_pos = find_center_radius(positives, zeros);
 
     return TripleCenterRadius{std::move(stable_neg), std::move(unstable), std::move(stable_pos)};
 }
