@@ -4,7 +4,6 @@
 #include <parse.hpp>
 #include <region.hpp>
 
-#if 0
 BOOST_AUTO_TEST_CASE(test_line_sign_at_point) {
 
     const std::vector<std::tuple<std::string, PointQ, Sign>> in_out = {
@@ -36,7 +35,6 @@ BOOST_AUTO_TEST_CASE(test_line_sign_at_point) {
         BOOST_TEST(sign == expected_sign);
     }
 }
-#endif
 
 #if 0
 BOOST_AUTO_TEST_CASE(test_intersection) {
