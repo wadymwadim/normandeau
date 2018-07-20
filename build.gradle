@@ -73,6 +73,7 @@ model {
                     cppCompiler.args '-Wall', '-Wextra', '-Wpedantic', '-Werror',
                                      '-Wno-c++11-compat', '-Wno-c++14-compat',
                                      '-std=c++14'
+                    linker.args '-lpthread'
                 } else {
                     println 'compiler unsupported; please use GCC or Clang'
                 }
@@ -102,6 +103,7 @@ model {
                     cppCompiler.args '-Wall', '-Wextra', '-Wpedantic', '-Werror',
                                      '-Wno-c++11-compat', '-Wno-c++14-compat',
                                      '-std=c++14'
+                    linker.args '-lpthread'
                 } else {
                     println 'compiler unsupported; please use GCC or Clang'
                 }

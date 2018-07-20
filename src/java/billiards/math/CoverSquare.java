@@ -38,9 +38,9 @@ public class CoverSquare {
 	}
 	
 	public Rectangle toRect() {
-		final double rad = Math.PI * this.radius();
-		final double centerX = Math.PI * numerX / (Math.pow(2, denom));
-		final double centerY = Math.PI * numerY / (Math.pow(2, denom));
+		final double rad = Math.PI * this.radius() / 2;
+		final double centerX = (Math.PI / 2) * (1 - numerX / (Math.pow(2, denom)));
+		final double centerY = (Math.PI / 2) * numerY / (Math.pow(2, denom));
 
 		return Rectangle.create(centerX - rad, centerX + rad, centerY - rad, centerY + rad);
 	}

@@ -718,6 +718,8 @@ public final class Viewer {
             final double radianY = ry;
 
             // iterate over the onScreenSequences, and check which ones are positive
+
+            
             // for the point. We want the codes on the right to be sorted from smallest
             // to largest, since that makes life much easier
             // map and filter would be really nice right now
