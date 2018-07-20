@@ -11,6 +11,7 @@ import billiards.geometry.Location;
 import billiards.geometry.Rectangle;
 import billiards.geometry.Point;
 import billiards.math.CosEquation;
+import billiards.math.CoverSquare;
 import billiards.math.Equation;
 import billiards.math.SinEquation;
 import billiards.math.XYEta;
@@ -209,7 +210,7 @@ public final class Viewer {
     final Button coverBtn = new Button();
     final Button covRectsColorBox = new Button();
     final Map<ConvexPolygon, Color> mrrBounds = new HashMap<>();
-    Rectangle selectedRect = null;
+    CoverSquare selectedRect = null;
     Color coverColor = Color.BLACK;
 
     final CheckBox coverColorCycle = new CheckBox();
@@ -301,7 +302,6 @@ public final class Viewer {
 		                // builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 		                
 		                final Process process = builder.start();
-				        process.waitFor();
 		                
 		                final BufferedReader reader = 
 		                		new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -322,6 +322,8 @@ public final class Viewer {
 				        }
 				        String error = strErr.toString();
 				        
+				        process.waitFor();
+
 				        new Console(windowTitle, screenScale, output + "\n" + error).show();
 		                
 	                } catch (final Exception ex) {
@@ -614,16 +616,16 @@ public final class Viewer {
 
     private void loadCoverAction(final File dir) {
         final String polygonString = Utils.readFromFile(dir + "/polygon.txt").trim();
-        final String squareString = Utils.readFromFile(dir + "/square.txt").trim();
+        //final String squareString = Utils.readFromFile(dir + "/square.txt").trim();
         final String stablesString = Utils.readFromFile(dir + "/stables.txt").trim();
         final String triplesString = Utils.readFromFile(dir + "/triples.txt").trim();
         final String coverString = Utils.readFromFile(dir + "/cover.txt").trim();
 
         final ConvexPolygon polygon = Cover.parsePolygon(polygonString);
-        final Rectangle square = Cover.parseRectangle(squareString);
+        final CoverSquare square = CoverSquare.initial(); // Cover.parseRectangle(squareString);
         final List<CodePair> stables = Cover.parseStables(stablesString);
         final List<TriplePair> triples = Cover.parseTriples(triplesString);
-        final Tuple2<Map<Rectangle, CodePair>, Map<Rectangle, TriplePair>> cover = Cover.parseCover(coverString, square, stables, triples);
+        final Tuple2<Map<CoverSquare, CodePair>, Map<CoverSquare, TriplePair>> cover = Cover.parseCover(coverString, square, stables, triples);
 
         // We can only load one cover at a time
         coverRects.clear();
@@ -752,8 +754,8 @@ public final class Viewer {
                 selectedStorages.add(unst2);
 
             } else {
-				for (final Rectangle rect : coverRects.stableEntrySet()) {
-					if (rect.contains(radianX, radianY)) {
+				for (final CoverSquare rect : coverRects.stableEntrySet()) {
+					if (rect.toRect().contains(radianX, radianY)) {
 						final CodePair codeSeq = coverRects.getStable(rect);
 						final Optional<Storage> optional = loadStorage(codeSeq);
 						if (optional.isPresent()) {
@@ -774,7 +776,7 @@ public final class Viewer {
 								color = coverColor;
 							}
 
-							for (final Rectangle rect2 : coverRects.stableEntrySet()) {
+							for (final CoverSquare rect2 : coverRects.stableEntrySet()) {
 								final CodePair codeSeq2 = coverRects.getStable(rect2);
 								final Color covColor;
 								if (color.equals(Color.TRANSPARENT)) {
@@ -790,8 +792,8 @@ public final class Viewer {
 						break;
 					}
 				}
-				for (final Rectangle rect : coverRects.tripleEntrySet()) {
-					if (rect.contains(radianX, radianY)) {
+				for (final CoverSquare rect : coverRects.tripleEntrySet()) {
+					if (rect.toRect().contains(radianX, radianY)) {
 						final TriplePair codeSeq = coverRects.getTriple(rect);
 						final Optional<Storage> optNeg = loadStorage(codeSeq.stableNeg);
 						final Optional<Storage> optUnst = loadStorage(codeSeq.unstable);
@@ -817,7 +819,7 @@ public final class Viewer {
 								color = coverColor;
 							}
 
-							for (final Rectangle rect2 : coverRects.tripleEntrySet()) {
+							for (final CoverSquare rect2 : coverRects.tripleEntrySet()) {
 								final TriplePair codeSeq2 = coverRects.getTriple(rect2);
 								final Color covColor;
 								if (color.equals(Color.TRANSPARENT)) {
@@ -962,14 +964,14 @@ public final class Viewer {
 
         final WritableImage regionImage = new WritableImage(SIZE, SIZE);
 
-        for (final Rectangle rect : coverRects.stableEntrySet()) {
-            renderRect(rect, regionImage, coverRects.getColor(rect), Color.FIREBRICK);
+        for (final CoverSquare rect : coverRects.stableEntrySet()) {
+            renderRect(rect.toRect(), regionImage, coverRects.getColor(rect), Color.FIREBRICK);
         }
-        for (final Rectangle rect : coverRects.tripleEntrySet()) {
-            renderRect(rect, regionImage, coverRects.getColor(rect), Color.FIREBRICK);
+        for (final CoverSquare rect : coverRects.tripleEntrySet()) {
+            renderRect(rect.toRect(), regionImage, coverRects.getColor(rect), Color.FIREBRICK);
         }
         if (selectedRect != null) {
-            renderRect(selectedRect, regionImage, coverRects.getColor(selectedRect), Color.WHITE);
+            renderRect(selectedRect.toRect(), regionImage, coverRects.getColor(selectedRect), Color.WHITE);
         }
         regionsImageView.setImage(regionImage);
 

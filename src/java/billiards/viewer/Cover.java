@@ -8,6 +8,7 @@ import billiards.codeseq.TriplePair;
 import billiards.geometry.ConvexPolygon;
 import billiards.geometry.Rectangle;
 import billiards.geometry.Point;
+import billiards.math.CoverSquare;
 import billiards.math.XYZ;
 
 import com.google.common.base.Splitter;
@@ -185,7 +186,9 @@ public final class Cover {
         return new Rectangle[] {upperLeft, upperRight, lowerLeft, lowerRight};
     }
 
-    private static void parseCover(final Iterator<String> tokens, final Rectangle square, final List<CodePair> stables, final List<TriplePair> triples, final Map<Rectangle, CodePair> stableCover, final Map<Rectangle, TriplePair> tripleCover) {
+    private static void parseCover(final Iterator<String> tokens, final CoverSquare square, 
+    		final List<CodePair> stables, final List<TriplePair> triples, 
+    		final Map<CoverSquare, CodePair> stableCover, final Map<CoverSquare, TriplePair> tripleCover) {
 
         final String token = tokens.next();
 
@@ -205,9 +208,9 @@ public final class Cover {
             tripleCover.put(square, triple);
         } else if (token.equals("D")) {
 
-            final Rectangle[] quarters = subdivide(square);
+            final CoverSquare[] quarters = square.subdivide();
 
-            for (final Rectangle quarter : quarters) {
+            for (final CoverSquare quarter : quarters) {
                 parseCover(tokens, quarter, stables, triples, stableCover, tripleCover);
             }
 
@@ -216,12 +219,13 @@ public final class Cover {
         }
     }
 
-    public static Tuple2<Map<Rectangle, CodePair>, Map<Rectangle, TriplePair>> parseCover(final String coverString, final Rectangle square, final List<CodePair> stables, final List<TriplePair> triples) {
+    public static Tuple2<Map<CoverSquare, CodePair>, Map<CoverSquare, TriplePair>> parseCover(
+    		final String coverString, final CoverSquare square, final List<CodePair> stables, final List<TriplePair> triples) {
 
         final Iterator<String> tokens = Splitter.on(' ').split(coverString).iterator();
 
-        final MutableMap<Rectangle, CodePair> stableCover = new UnifiedMap<>();
-        final MutableMap<Rectangle, TriplePair> tripleCover = new UnifiedMap<>();
+        final MutableMap<CoverSquare, CodePair> stableCover = new UnifiedMap<>();
+        final MutableMap<CoverSquare, TriplePair> tripleCover = new UnifiedMap<>();
 
         parseCover(tokens, square, stables, triples, stableCover, tripleCover);
 
