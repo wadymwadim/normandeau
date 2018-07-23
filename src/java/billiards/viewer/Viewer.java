@@ -757,7 +757,7 @@ public final class Viewer {
 
             } else {
 				for (final CoverSquare rect : coverRects.stableEntrySet()) {
-					if (rect.toRect().contains(radianX, radianY)) {
+					if (rect.contains(radianX, radianY)) {
 						final CodePair codeSeq = coverRects.getStable(rect);
 						final Optional<Storage> optional = loadStorage(codeSeq);
 						if (optional.isPresent()) {
@@ -795,7 +795,7 @@ public final class Viewer {
 					}
 				}
 				for (final CoverSquare rect : coverRects.tripleEntrySet()) {
-					if (rect.toRect().contains(radianX, radianY)) {
+					if (rect.contains(radianX, radianY)) {
 						final TriplePair codeSeq = coverRects.getTriple(rect);
 						final Optional<Storage> optNeg = loadStorage(codeSeq.stableNeg);
 						final Optional<Storage> optUnst = loadStorage(codeSeq.unstable);
@@ -967,13 +967,13 @@ public final class Viewer {
         final WritableImage regionImage = new WritableImage(SIZE, SIZE);
 
         for (final CoverSquare rect : coverRects.stableEntrySet()) {
-            renderRect(rect.toRect(), regionImage, coverRects.getColor(rect), Color.FIREBRICK);
+            renderCovSqr(rect, regionImage, coverRects.getColor(rect), Color.FIREBRICK);
         }
         for (final CoverSquare rect : coverRects.tripleEntrySet()) {
-            renderRect(rect.toRect(), regionImage, coverRects.getColor(rect), Color.FIREBRICK);
+        	renderCovSqr(rect, regionImage, coverRects.getColor(rect), Color.FIREBRICK);
         }
         if (selectedRect != null) {
-            renderRect(selectedRect.toRect(), regionImage, coverRects.getColor(selectedRect), Color.WHITE);
+        	renderCovSqr(selectedRect, regionImage, coverRects.getColor(selectedRect), Color.WHITE);
         }
         regionsImageView.setImage(regionImage);
 
@@ -1209,6 +1209,7 @@ public final class Viewer {
         }
     }
 
+    /*
     private void renderRect(final Rectangle rect, final WritableImage image,
                             final Color colorInside, final Color colorBound) {
         final PixelWriter pixelWriter = image.getPixelWriter();
@@ -1217,6 +1218,34 @@ public final class Viewer {
         final int startPY = Math.max((int) map.pixelY(rect.intervalY.min), 0);
         final int endPX = Math.min((int) map.pixelX(rect.intervalX.max), SIZE);
         final int endPY = Math.min((int) map.pixelY(rect.intervalY.max), SIZE);
+
+        for (int i = startPX; i <= endPX; i++) {
+            for (int j = startPY; j <= endPY; j++) {
+                if (SIZE > i && i >= 0 && SIZE > j && j >= 0) {
+                    if ((i == startPX || i == endPX || j == startPY || j == endPY)) {
+                        try {
+                            pixelWriter.setColor(i, j, colorBound);
+                        } catch (final IndexOutOfBoundsException e) {
+                            // do nothing
+                        }
+
+                    } else {
+                        pixelWriter.setColor(i, j, colorInside);
+                    }
+                }
+            }
+        }
+    } 
+    */
+    
+    private void renderCovSqr(final CoverSquare cov, final WritableImage image,
+    		final Color colorInside, final Color colorBound) {
+    	final PixelWriter pixelWriter = image.getPixelWriter();
+    	final double[] bounds =  cov.bounds();
+        final int startPX = Math.max((int) map.pixelX(bounds[0]), 0);
+        final int endPX = Math.min((int) map.pixelX(bounds[1]), SIZE);
+        final int startPY = Math.max((int) map.pixelY(bounds[2]), 0);
+        final int endPY = Math.min((int) map.pixelY(bounds[3]), SIZE);
 
         for (int i = startPX; i <= endPX; i++) {
             for (int j = startPY; j <= endPY; j++) {

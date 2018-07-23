@@ -1,7 +1,5 @@
 package billiards.math;
 
-import billiards.geometry.Rectangle;
-
 public class CoverSquare {
 	final long numerX;
 	final long numerY;
@@ -14,14 +12,15 @@ public class CoverSquare {
 		this.denom = denomPower;
 	}
 	
+	// initialize (1/2, 1/2) as our center
 	public static CoverSquare initial() {
 		return new CoverSquare(1, 1, (byte) 1);
 	}
 	
 	public CoverSquare[] subdivide() {
 		// order of return: 
-		// 1 2
-		// 3 4
+		// | 1 2 |
+		// | 3 4 |
 		final byte newDenom = (byte) (denom + 1);
 		final long newNum1X = (2 * numerX) + 1;
 		final long newNum2X = (2 * numerX) - 1;
@@ -37,12 +36,18 @@ public class CoverSquare {
 		return 1 / Math.pow(2, denom);
 	}
 	
-	public Rectangle toRect() {
+	// return is { Xmin, Xmax, Ymin, Ymax} !
+	public double[] bounds() {
 		final double rad = Math.PI * this.radius() / 2;
-		final double centerX = (Math.PI / 2) * (1 - numerX / (Math.pow(2, denom)));
-		final double centerY = (Math.PI / 2) * numerY / (Math.pow(2, denom));
-
-		return Rectangle.create(centerX - rad, centerX + rad, centerY - rad, centerY + rad);
+		final double centerX = (Math.PI / 2) * (1 - numerX * this.radius()); //TODO !!
+		final double centerY = (Math.PI / 2) * numerY * this.radius();
+		final double[] bounds = {centerX - rad, centerX + rad, centerY - rad, centerY + rad};
+		return bounds;
+	}
+	
+	public boolean contains(double x, double y) {
+		final double[] b = this.bounds();
+		return b[0] < x && x < b[1] && b[2] < y && y < b[3];
 	}
 	
 	/*  Could try this too:
