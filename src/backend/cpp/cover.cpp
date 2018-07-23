@@ -1,7 +1,7 @@
+#include <boost/algorithm/string.hpp>
+
 #include "cover.hpp"
 #include "parse.hpp"
-
-#include <boost/algorithm/string.hpp>
 
 ClosedRectangleQ load_square(const std::string& dir) {
 
@@ -12,7 +12,7 @@ ClosedRectangleQ load_square(const std::string& dir) {
 
     if (coords.size() != 4) {
         std::ostringstream err{};
-        err << "cover::load_square: expected 4 coordinates, got " << coords.size();
+        err << "load_square: expected 4 coordinates, got " << coords.size();
         throw std::runtime_error(err.str());
     }
 
@@ -25,7 +25,7 @@ ClosedRectangleQ load_square(const std::string& dir) {
     const ClosedRectangleQ square{{x_min, x_max}, {y_min, y_max}};
 
     if (!square.is_square()) {
-        throw std::runtime_error("cover::load_square: not a square");
+        throw std::runtime_error("load_square: not a square");
     }
 
     return square;
@@ -46,7 +46,7 @@ ClosedConvexPolygonQ load_polygon(const std::string& dir) {
 
         if (coords.size() != 2) {
             std::ostringstream err{};
-            err << "cover::load_polygon: expected 2 coordinates, got " << coords.size();
+            err << "load_polygon: expected 2 coordinates, got " << coords.size();
             throw std::runtime_error(err.str());
         }
 
@@ -79,7 +79,7 @@ std::vector<CodePair> load_singles(const std::string& dir) {
 
         if (comps.size() != 3) {
             std::ostringstream err{};
-            err << "cover::load_singles: expected 3 components, got " << comps.size();
+            err << "load_singles: expected 3 components, got " << comps.size();
             throw std::runtime_error(err.str());
         }
 
@@ -94,7 +94,7 @@ std::vector<CodePair> load_singles(const std::string& dir) {
         // The indices must be in order
         if (index != i) {
             std::ostringstream err{};
-            err << "cover::load_singles: mismatched indices: expected " << i << ", got " << index;
+            err << "load_singles: mismatched indices: expected " << i << ", got " << index;
             throw std::runtime_error(err.str());
         }
 
@@ -126,7 +126,7 @@ std::vector<TriplePair> load_triples(const std::string& dir) {
 
         if (comps.size() != 7) {
             std::ostringstream err{};
-            err << "cover::load_triples: expected 7 components, got " << comps.size();
+            err << "load_triples: expected 7 components, got " << comps.size();
             throw std::runtime_error(err.str());
         }
 
@@ -148,7 +148,7 @@ std::vector<TriplePair> load_triples(const std::string& dir) {
         // The indices must be in order
         if (index != i) {
             std::ostringstream err{};
-            err << "cover::load_triples: mismatched indices: expected " << i << ", got " << index;
+            err << "load_triples: mismatched indices: expected " << i << ", got " << index;
             throw std::runtime_error(err.str());
         }
 

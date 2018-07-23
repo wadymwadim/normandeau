@@ -39,8 +39,6 @@ Unfolding::Unfolding(const std::vector<CodeNumber>& tmp_code_numbers, const std:
     const auto code_numbers = double_if_odd(tmp_code_numbers);
     const auto code_angles = double_if_odd(tmp_code_angles);
 
-    // We could just use back and front, but those are undefined when code_angles
-    // is empty. Safety first.
     const auto prev_angle = code_angles.at(code_angles.size() - 1);
     const auto next_angle = code_angles.at(0);
     const auto current_side = other_angle(prev_angle, next_angle);
@@ -189,19 +187,9 @@ std::pair<EqMap<Sin>, EqMap<Cos>> Unfolding::path_vector(const std::vector<Verte
 
         // a = current_edge.polar_angle
         // b = current_edge.edge_type
-        const auto sum = [&]() {
-            LinComArrZ<XYPi> builder{};
-            builder.add(current_edge.polar_angle);
-            builder.add(xyz_to_xypi(current_edge.edge_type));
-            return builder;
-        }();
 
-        const auto diff = [&]() {
-            LinComArrZ<XYPi> builder{};
-            builder.add(current_edge.polar_angle);
-            builder.sub(xyz_to_xypi(current_edge.edge_type));
-            return builder;
-        }();
+        const auto sum = LinComArrZ<XYPi>::add(current_edge.polar_angle, xyz_to_xypi(current_edge.edge_type));
+        const auto diff = LinComArrZ<XYPi>::sub(current_edge.polar_angle, xyz_to_xypi(current_edge.edge_type));
 
         const auto sin_sum = simplify_sin_xypi(sum);
         const auto sin_diff = simplify_sin_xypi(diff);

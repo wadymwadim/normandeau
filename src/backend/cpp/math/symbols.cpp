@@ -97,7 +97,7 @@ XYZ other_angle(const XYZ angle1, const XYZ angle2) {
     }
 
     std::ostringstream err{};
-    err << "invalid angles in other_angle: "
+    err << "other_angle: invalid angles: "
         << "angle1 = " << static_cast<size_t>(angle1) << ", "
         << "angle2 = " << static_cast<size_t>(angle2);
 
