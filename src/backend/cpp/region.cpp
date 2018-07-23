@@ -2,11 +2,12 @@
 #include "inequalities.hpp"
 
 static PointQ intersection(const LinComArrZ<XYEta>& line1, const LinComArrZ<XYEta>& line2) {
-    // line1 = a1*a + b1*b + c1*eta
-    // line2 = a2*a + b2*b + c2*eta
-    // [ a1 b1 ] [ a ] = [ - c1*eta ]
-    // [ a2 b2 ] [ b ] = [ - c2*eta ]
-    // now solve using Cramer's rule
+
+    // line1 = a1*x + b1*y + c1
+    // line2 = a2*x + b2*y + c2
+    // [ a1 b1 ] [ x ] = [ - c1 ]
+    // [ a2 b2 ] [ y ] = [ - c2 ]
+    // Now solve using Cramer's rule
 
     // Calculating the following determinants can overflow for 32 bit integers, so we
     // convert them to 64 bits before doing the math.
@@ -20,36 +21,17 @@ static PointQ intersection(const LinComArrZ<XYEta>& line1, const LinComArrZ<XYEt
 
     const auto det = a1 * b2 - b1 * a2;
 
-// Divison by zero is also checked in the constructor,
-// so we will only check here in debug mode
-#ifndef NDEBUG
-    if (det == 0) {
-        std::ostringstream err;
-        err << "degenerate system " << line1 << " = 0, " << line2 << " = 0";
-        throw std::runtime_error(err.str());
-    }
-#endif
-
-    // For the GMP backend, the denominator is an unsigned
-    // integer. This is not always the case with the current
-    // setup, and sometimes the denominator is -1, which is
-    // cast to an unsigned integer and so gets really huge
-    // This is not a problem for the Boost cpp thing
-    // TODO report the bug to the Boost people.
-
-    // We can't do this unfortunately, because GMP expects
-    // the denominator to be unsigned, which it isn't.
-    //const Rational first{b1 * c2 - b2 * c1, det};
-    //const Rational second{a2 * c1 - a1 * c2, det};
-
-    // Workaround for GMP backend
+    // GMP always expects the denominator to be unsigned, which is not the case
+    // for us. As a workaround, divide by the determinant instead.
+    // This will throw an exception on division by zero, which indicates
+    // an inconsistent system.
     const Rational first = Rational{b1 * c2 - b2 * c1} / det;
     const Rational second = Rational{a2 * c1 - a1 * c2} / det;
 
     return {first, second};
 }
 
-Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) {
+Rational eval(const LinComArrZ<XYEta>& equation, const PointQ& point) {
 
     // c1 * x + c2 * y + c3 * eta
     const auto x_coeff = equation.coeff<XYEta::X>();
@@ -58,7 +40,12 @@ Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) 
 
     const Rational result = x_coeff * point.x + y_coeff * point.y + eta_coeff;
 
-    const auto sign = result.sign();
+    return result;
+}
+
+Sign rational_sign(const Rational& rat) {
+
+    const auto sign = rat.sign();
 
     if (sign > 0) {
         return Sign::Pos;
@@ -75,299 +62,163 @@ Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) 
     // Strictly speaking, this shouldn't be necessary, since integers obey
     // trichotomy, but the type system is unaware of that, so I'll leave
     // this in here.
-    throw std::runtime_error(result.str() + " has no sign");
+    throw std::runtime_error(rat.str() + " has no sign");
 }
 
-// TODO find a better way of doing this
-#define CASE1(x, y, z) if (zero_zero_sign == x && pi_zero_sign == y && zero_pi_sign == z)
+Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point) {
+    return rational_sign(eval(equation, point));
+}
+
+#define CASE3(x, y, z) if (zero_zero_sign == x && pi_zero_sign == y && zero_pi_sign == z)
 
 // Calculate where the constraint intersects the (0,0) (0, 2*eta), (2*eta, 0) triangle
-// First coord is a, second is b
-// Both of these have an empty initial line segment
-// 1 1 3 1 3 1 1 5 2 2 1 1 5 3
-// 1 1 3 1 5 1 1 5 2 2 1 1 5 3
-// When doing a switch statement, don't rely on the fallthrough nature: is that what you
-// want, or did you just forget to deal with that case? Do each one individually
 static boost::optional<RationalLineSegment> initial_line_segment(const LinComArrZ<XYEta>& constraint) {
 
     // The most basic constraints are that x, y, z > 0
-    // This gives us the open set of the triangle
-    // Then, we can translate the line segment into x and y, as we see fit
-    const LinComArrZ<XYEta> a{1, 0, 0};   // x > 0
-    const LinComArrZ<XYEta> b{0, 1, 0};   // y > 0
-    const LinComArrZ<XYEta> c{-1, -1, 2}; // z = - x - y + 2*eta > 0
+    // This gives us the open triangle with coordinates (0, 0), (2, 0), and (0, 2).
+    const LinComArrZ<XYEta> x{1, 0, 0};   // x > 0
+    const LinComArrZ<XYEta> y{0, 1, 0};   // y > 0
+    const LinComArrZ<XYEta> z{-1, -1, 2}; // z = - x - y + 2*eta > 0
 
     const auto zero_zero_sign = line_sign_at_point(constraint, {0, 0});
     const auto pi_zero_sign = line_sign_at_point(constraint, {2, 0});
     const auto zero_pi_sign = line_sign_at_point(constraint, {0, 2});
 
-    // (0, 0) -> b
-    // (2, 0) -> c
-    // (0, 2) -> a
-
     // The line segment must be part of the interior of the triangle
     // Anything lying along the edges must get thrown out
-    // a_inter, b_inter, c_inter
 
-    // As tedious as this seems, we need to deal with all 3^3 = 27 cases
-    // individually
+    // As tedious as this seems, we need to deal with all 3^3 = 27 cases individually
 
-    CASE1(Sign::Neg, Sign::Neg, Sign::Neg) {
+    CASE3(Sign::Neg, Sign::Neg, Sign::Neg) {
         return boost::none;
     }
 
-    CASE1(Sign::Neg, Sign::Neg, Sign::Zero) {
+    CASE3(Sign::Neg, Sign::Neg, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Neg, Sign::Neg, Sign::Pos) {
-        const auto a_inter = intersection(constraint, a);
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{a_inter, a, c_inter, c};
+    CASE3(Sign::Neg, Sign::Neg, Sign::Pos) {
+        const auto x_inter = intersection(constraint, x);
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{x_inter, x, z_inter, z};
     }
 
-    CASE1(Sign::Neg, Sign::Zero, Sign::Neg) {
+    CASE3(Sign::Neg, Sign::Zero, Sign::Neg) {
         return boost::none;
     }
 
-    CASE1(Sign::Neg, Sign::Zero, Sign::Zero) {
+    CASE3(Sign::Neg, Sign::Zero, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Neg, Sign::Zero, Sign::Pos) {
-        const auto a_inter = intersection(constraint, a);
-        return RationalLineSegment{a_inter, a, {2, 0}, c};
+    CASE3(Sign::Neg, Sign::Zero, Sign::Pos) {
+        const auto x_inter = intersection(constraint, x);
+        return RationalLineSegment{x_inter, x, {2, 0}, z};
     }
 
-    CASE1(Sign::Neg, Sign::Pos, Sign::Neg) {
-        const auto b_inter = intersection(constraint, b);
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{b_inter, b, c_inter, c};
+    CASE3(Sign::Neg, Sign::Pos, Sign::Neg) {
+        const auto y_inter = intersection(constraint, y);
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{y_inter, y, z_inter, z};
     }
 
-    CASE1(Sign::Neg, Sign::Pos, Sign::Zero) {
-        const auto b_inter = intersection(constraint, b);
-        return RationalLineSegment{{0, 2}, a, b_inter, b};
+    CASE3(Sign::Neg, Sign::Pos, Sign::Zero) {
+        const auto y_inter = intersection(constraint, y);
+        return RationalLineSegment{{0, 2}, x, y_inter, y};
     }
 
-    CASE1(Sign::Neg, Sign::Pos, Sign::Pos) {
-        const auto a_inter = intersection(constraint, a);
-        const auto b_inter = intersection(constraint, b);
-        return RationalLineSegment{a_inter, a, b_inter, b};
+    CASE3(Sign::Neg, Sign::Pos, Sign::Pos) {
+        const auto x_inter = intersection(constraint, x);
+        const auto y_inter = intersection(constraint, y);
+        return RationalLineSegment{x_inter, x, y_inter, y};
     }
 
-    CASE1(Sign::Zero, Sign::Neg, Sign::Neg) {
+    CASE3(Sign::Zero, Sign::Neg, Sign::Neg) {
         return boost::none;
     }
 
-    CASE1(Sign::Zero, Sign::Neg, Sign::Zero) {
+    CASE3(Sign::Zero, Sign::Neg, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Zero, Sign::Neg, Sign::Pos) {
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{{0, 0}, b, c_inter, c};
+    CASE3(Sign::Zero, Sign::Neg, Sign::Pos) {
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{{0, 0}, y, z_inter, z};
     }
 
-    CASE1(Sign::Zero, Sign::Zero, Sign::Neg) {
+    CASE3(Sign::Zero, Sign::Zero, Sign::Neg) {
         return boost::none;
     }
 
-    CASE1(Sign::Zero, Sign::Zero, Sign::Zero) {
+    CASE3(Sign::Zero, Sign::Zero, Sign::Zero) {
         // Mathematically impossible
-        throw std::runtime_error("zero-zero-zero case in initial_line_segment");
+        throw std::runtime_error("initial_line_segment: zero-zero-zero");
     }
 
-    CASE1(Sign::Zero, Sign::Zero, Sign::Pos) {
+    CASE3(Sign::Zero, Sign::Zero, Sign::Pos) {
         return boost::none;
     }
 
-    CASE1(Sign::Zero, Sign::Pos, Sign::Neg) {
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{{0, 0}, b, c_inter, c};
+    CASE3(Sign::Zero, Sign::Pos, Sign::Neg) {
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{{0, 0}, y, z_inter, z};
     }
 
-    CASE1(Sign::Zero, Sign::Pos, Sign::Zero) {
+    CASE3(Sign::Zero, Sign::Pos, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Zero, Sign::Pos, Sign::Pos) {
+    CASE3(Sign::Zero, Sign::Pos, Sign::Pos) {
         return boost::none;
     }
 
-    CASE1(Sign::Pos, Sign::Neg, Sign::Neg) {
-        const auto a_inter = intersection(constraint, a);
-        const auto b_inter = intersection(constraint, b);
-        return RationalLineSegment{a_inter, a, b_inter, b};
+    CASE3(Sign::Pos, Sign::Neg, Sign::Neg) {
+        const auto x_inter = intersection(constraint, x);
+        const auto y_inter = intersection(constraint, y);
+        return RationalLineSegment{x_inter, x, y_inter, y};
     }
 
-    CASE1(Sign::Pos, Sign::Neg, Sign::Zero) {
-        const auto b_inter = intersection(constraint, b);
-        return RationalLineSegment{{0, 2}, a, b_inter, b};
+    CASE3(Sign::Pos, Sign::Neg, Sign::Zero) {
+        const auto y_inter = intersection(constraint, y);
+        return RationalLineSegment{{0, 2}, x, y_inter, y};
     }
 
-    CASE1(Sign::Pos, Sign::Neg, Sign::Pos) {
-        const auto b_inter = intersection(constraint, b);
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{b_inter, b, c_inter, c};
+    CASE3(Sign::Pos, Sign::Neg, Sign::Pos) {
+        const auto y_inter = intersection(constraint, y);
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{y_inter, y, z_inter, z};
     }
 
-    CASE1(Sign::Pos, Sign::Zero, Sign::Neg) {
-        const auto a_inter = intersection(constraint, a);
-        return RationalLineSegment{a_inter, a, {2, 0}, b};
+    CASE3(Sign::Pos, Sign::Zero, Sign::Neg) {
+        const auto x_inter = intersection(constraint, x);
+        return RationalLineSegment{x_inter, x, {2, 0}, y};
     }
 
-    CASE1(Sign::Pos, Sign::Zero, Sign::Zero) {
+    CASE3(Sign::Pos, Sign::Zero, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Pos, Sign::Zero, Sign::Pos) {
+    CASE3(Sign::Pos, Sign::Zero, Sign::Pos) {
         return boost::none;
     }
 
-    CASE1(Sign::Pos, Sign::Pos, Sign::Neg) {
-        const auto a_inter = intersection(constraint, a);
-        const auto c_inter = intersection(constraint, c);
-        return RationalLineSegment{a_inter, a, c_inter, c};
+    CASE3(Sign::Pos, Sign::Pos, Sign::Neg) {
+        const auto x_inter = intersection(constraint, x);
+        const auto z_inter = intersection(constraint, z);
+        return RationalLineSegment{x_inter, x, z_inter, z};
     }
 
-    CASE1(Sign::Pos, Sign::Pos, Sign::Zero) {
+    CASE3(Sign::Pos, Sign::Pos, Sign::Zero) {
         return boost::none;
     }
 
-    CASE1(Sign::Pos, Sign::Pos, Sign::Pos) {
+    CASE3(Sign::Pos, Sign::Pos, Sign::Pos) {
         return boost::none;
     }
 
-    std::ostringstream err;
-    err << "unknown signs "
-        << static_cast<size_t>(zero_zero_sign) << ", "
-        << static_cast<size_t>(pi_zero_sign) << ", "
-        << static_cast<size_t>(zero_pi_sign) << " in initial_line_segment";
+    std::ostringstream err{};
+    err << "initial_line_segment: unknown signs " << static_cast<size_t>(zero_zero_sign) << ", " << static_cast<size_t>(pi_zero_sign) << ", " << static_cast<size_t>(zero_pi_sign);
     throw std::runtime_error(err.str());
-
-#if 0
-    switch (zero_zero_sign) {
-    case Sign::Neg:
-        switch (pi_zero_sign) {
-        case Sign::Neg:
-            switch (zero_pi_sign) {
-            case Sign::Neg:
-                return boost::none;
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                const auto a_inter = intersection(constraint, a);
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{a_inter, a, c_inter, c};
-            }
-        case Sign::Zero:
-            switch (zero_pi_sign) {
-            case Sign::Neg:
-                return boost::none;
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                const auto a_inter = intersection(constraint, a);
-                return RationalLineSegment{a_inter, a, {2, 0}, c};
-            }
-        case Sign::Pos:
-            switch (zero_pi_sign) {
-            case Sign::Neg: {
-                const auto b_inter = intersection(constraint, b);
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{b_inter, b, c_inter, c};
-            }
-            case Sign::Zero: {
-                const auto b_inter = intersection(constraint, b);
-                return RationalLineSegment{{0, 2}, a, b_inter, b};
-            }
-            case Sign::Pos: {
-                const auto a_inter = intersection(constraint, a);
-                const auto b_inter = intersection(constraint, b);
-                return RationalLineSegment{a_inter, a, b_inter, b};
-            }
-            }
-        }
-    case Sign::Zero:
-        switch (pi_zero_sign) {
-        case Sign::Neg:
-            switch (zero_pi_sign) {
-            case Sign::Neg:
-                return boost::none;
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{{0, 0}, b, c_inter, c};
-            }
-        case Sign::Zero:
-            switch (zero_pi_sign) {
-            case Sign::Neg:
-                return boost::none;
-            case Sign::Zero:
-                // Mathematically impossible
-                throw std::runtime_error("zero-zero-zero case in initial_line_segment");
-            case Sign::Pos:
-                return boost::none;
-            }
-        case Sign::Pos:
-            switch (zero_pi_sign) {
-            case Sign::Neg: {
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{{0, 0}, b, c_inter, c};
-            }
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                return boost::none;
-            }
-        }
-    case Sign::Pos:
-        switch (pi_zero_sign) {
-        case Sign::Neg:
-            switch (zero_pi_sign) {
-            case Sign::Neg: {
-                const auto a_inter = intersection(constraint, a);
-                const auto b_inter = intersection(constraint, b);
-                return RationalLineSegment{a_inter, a, b_inter, b};
-            }
-            case Sign::Zero: {
-                const auto b_inter = intersection(constraint, b);
-                return RationalLineSegment{{0, 2}, a, b_inter, b};
-            }
-            case Sign::Pos: {
-                const auto b_inter = intersection(constraint, b);
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{b_inter, b, c_inter, c};
-            }
-            }
-        case Sign::Zero:
-            switch (zero_pi_sign) {
-            case Sign::Neg: {
-                const auto a_inter = intersection(constraint, a);
-                return RationalLineSegment{a_inter, a, {2, 0}, b};
-            }
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                return boost::none;
-            }
-        case Sign::Pos:
-            switch (zero_pi_sign) {
-            case Sign::Neg: {
-                const auto a_inter = intersection(constraint, a);
-                const auto c_inter = intersection(constraint, c);
-                return RationalLineSegment{a_inter, a, c_inter, c};
-            }
-            case Sign::Zero:
-                return boost::none;
-            case Sign::Pos:
-                return boost::none;
-            }
-        }
-    }
-#endif
 }
 
 #define CASE2(x, y) if (sign0 == x && sign1 == y)
@@ -401,15 +252,10 @@ static boost::optional<RationalLineSegment> refine_line_segment(const LinComArrZ
     }
 
     CASE2(Sign::Zero, Sign::Zero) {
-        // 1 2 3 2
-        // This is an empty region
         return boost::none;
     }
 
     CASE2(Sign::Zero, Sign::Pos) {
-        // we could use line or line0, keep the boundary line for
-        // simplicity
-        //return RationalLineSegment{point0, line0, point1, line1};
         return line_segment;
     }
 
@@ -419,8 +265,6 @@ static boost::optional<RationalLineSegment> refine_line_segment(const LinComArrZ
     }
 
     CASE2(Sign::Pos, Sign::Zero) {
-        // could use line or line1, use line1 for simplicity
-        //return {{{{point0, line0}, {point1, line1}}}};
         return line_segment;
     }
 
@@ -428,54 +272,9 @@ static boost::optional<RationalLineSegment> refine_line_segment(const LinComArrZ
         return line_segment;
     }
 
-    std::ostringstream err;
-    err << "unknown signs "
-        << static_cast<size_t>(sign0) << ", "
-        << static_cast<size_t>(sign1) << "in refine_line_segment rational";
+    std::ostringstream err{};
+    err << "refine_line_segment: unknown signs " << static_cast<size_t>(sign0) << ", " << static_cast<size_t>(sign1);
     throw std::runtime_error(err.str());
-
-#if 0
-    switch (sign0) {
-    case Sign::Neg:
-        switch (sign1) {
-        case Sign::Neg:
-            return boost::none;
-        case Sign::Zero:
-            return boost::none;
-        case Sign::Pos:
-            const auto inter = intersection(constraint, line);
-            return RationalLineSegment{inter, line, point1, line1};
-        }
-    case Sign::Zero:
-        switch (sign1) {
-        case Sign::Neg:
-            return boost::none;
-        case Sign::Zero:
-            // 1 2 3 2
-            // This is an empty region
-            return boost::none;
-        case Sign::Pos:
-            // we could use line or line0, keep the boundary line for
-            // simplicity
-            //return RationalLineSegment{point0, line0, point1, line1};
-            return line_segment;
-        }
-    case Sign::Pos:
-        switch (sign1) {
-        case Sign::Zero:
-            // could use line or line1, use line1 for simplicity
-            //return {{{{point0, line0}, {point1, line1}}}};
-            return line_segment;
-        case Sign::Pos:
-            return line_segment;
-        case Sign::Neg:
-            // Because switch statements are stupid in C++, this one needs to go at the end because it
-            // declares a variable
-            const auto inter = intersection(constraint, line);
-            return RationalLineSegment{point0, line0, inter, line};
-        }
-    }
-#endif
 }
 
 boost::optional<RationalLineSegment> calculate_bounding_line_segment(const std::vector<CodeNumber>& code_numbers, const std::vector<XYZ>& code_angles, const LinComArrZ<XYEta>& constraint) {
@@ -500,21 +299,16 @@ boost::optional<RationalLineSegment> calculate_bounding_line_segment(const std::
 
 static boost::optional<RationalPolygon> refine_polygon(const RationalPolygon& polygon, const LinComArrZ<XYEta>& line) {
 
-    const auto signs = [&]() {
-        std::vector<Sign> vec;
-        for (const auto& rat_pair : polygon) {
-            const auto sign = line_sign_at_point(line, rat_pair.point);
-            vec.push_back(sign);
-        }
+    std::vector<Sign> signs{};
+    for (const auto& rat_pair : polygon) {
+        const auto sign = line_sign_at_point(line, rat_pair.point);
+        signs.push_back(sign);
+    }
 
-        return vec;
-    }();
-
-    RationalPolygon new_polygon;
+    RationalPolygon new_polygon{};
 
     const size_t size = polygon.size();
 
-    // TODO can we avoid the bounds checking here?
     for (size_t i = 0; i < size; i += 1) {
         const auto& point = polygon.at(i).point;
         const auto& side_line = polygon.at(i).side_line;
@@ -522,6 +316,7 @@ static boost::optional<RationalPolygon> refine_polygon(const RationalPolygon& po
         const auto sign0 = signs.at(i);
         const auto sign1 = signs.at((i + 1) % size);
 
+        // TODO change this to CASE2
         if (sign0 == Sign::Neg && sign1 == Sign::Neg) {
             continue;
         } else if (sign0 == Sign::Neg && sign1 == Sign::Zero) {
@@ -547,61 +342,14 @@ static boost::optional<RationalPolygon> refine_polygon(const RationalPolygon& po
             new_polygon.emplace_back(point, side_line);
 
         } else {
-            std::ostringstream err;
-            err << "unknown signs " << static_cast<size_t>(sign0) << ", "
-                << static_cast<size_t>(sign1) << " in refine_polygon rational";
+            std::ostringstream err{};
+            err << "refine_polygon: unknown signs " << static_cast<size_t>(sign0) << ", " << static_cast<size_t>(sign1);
             throw std::runtime_error(err.str());
         }
-
-#if 0
-        // Should be 12 breaks
-        switch (sign0) {
-        case Sign::Neg:
-            switch (sign1) {
-            case Sign::Neg:
-                break;
-            case Sign::Zero:
-                break;
-            case Sign::Pos:
-                const auto inter = intersection(side_line, line);
-                new_polygon.emplace_back(inter, side_line);
-                break;
-            }
-            break;
-        case Sign::Zero:
-            switch (sign1) {
-            case Sign::Neg:
-                new_polygon.emplace_back(point, line);
-                break;
-            case Sign::Zero:
-                new_polygon.emplace_back(point, side_line);
-                break;
-            case Sign::Pos:
-                new_polygon.emplace_back(point, side_line);
-                break;
-            }
-            break;
-        case Sign::Pos:
-            new_polygon.emplace_back(point, side_line);
-            switch (sign1) {
-            case Sign::Zero:
-                break;
-            case Sign::Pos:
-                break;
-            case Sign::Neg:
-                const auto inter = intersection(side_line, line);
-                new_polygon.emplace_back(inter, line);
-                break;
-            }
-            break;
-        }
-#endif
     }
 
     // This polygon must be an open set, so polyons with just two points are
-    // illegal (since those would just be a straight line).
-
-    // Reduced to empty polygon
+    // empty sets (since those would just be a straight line).
     if (new_polygon.size() < 3) {
         return boost::none;
     }
@@ -614,26 +362,17 @@ boost::optional<RationalPolygon> calculate_bounding_polygon(const std::vector<Co
     // each inequality is > 0
     const auto inequalities = calculate_bounding_inequalities(code_numbers, code_angles);
 
-    const LinComArrZ<XYEta> a{1, 0, 0};   // x > 0
-    const LinComArrZ<XYEta> b{0, 1, 0};   // y > 0
-    const LinComArrZ<XYEta> c{-1, -1, 2}; // z = - x - y + 2*eta > 0
+    const LinComArrZ<XYEta> x{1, 0, 0};   // x > 0
+    const LinComArrZ<XYEta> y{0, 1, 0};   // y > 0
+    const LinComArrZ<XYEta> z{-1, -1, 2}; // z = - x - y + 2*eta > 0
 
     // The initial bounding polygon
-    // The order of these points is VERY important.
-    // It determines if you iterate around the polygon in a CW or CCW
-    // direction when you refine it. This in turn affects how you rotate
-    // the gradient vectors when checking the zero corner case
-    // Currently, we are going around CCW.
-    RationalPolygon polygon = {
-        RationalPair{{0, 0}, b},
-        RationalPair{{2, 0}, c},
-        RationalPair{{0, 2}, a}};
+    RationalPolygon polygon{RationalPair{{0, 0}, y}, RationalPair{{2, 0}, z}, RationalPair{{0, 2}, x}};
 
     for (const auto& line : inequalities) {
 
         const auto new_polygon = refine_polygon(polygon, line);
 
-        // If the polygon is empty, return none
         if (!new_polygon) {
             return boost::none;
         }

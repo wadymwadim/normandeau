@@ -5,6 +5,10 @@
 
 Sign line_sign_at_point(const LinComArrZ<XYEta>& equation, const PointQ& point);
 
+Rational eval(const LinComArrZ<XYEta>& equation, const PointQ& point);
+
+Sign rational_sign(const Rational& rat);
+
 class RationalLineSegment final {
 
   public:
@@ -37,8 +41,7 @@ class RationalPair final {
     }
 };
 
-// PointQ is the point, and LinComArrZ<XYEta> is the line that goes from that
-// point to the next one
+// PointQ is the point, and LinComArrZ<XYEta> is the line that goes from that point to the next one
 using RationalPolygon = std::vector<RationalPair>;
 
 boost::optional<RationalPolygon> calculate_bounding_polygon(const std::vector<CodeNumber>& code_numbers, const std::vector<XYZ>& code_angles);
