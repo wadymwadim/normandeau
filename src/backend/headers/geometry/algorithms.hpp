@@ -2,8 +2,6 @@
 
 // Every algorithm should have a short proof or explanation of why it works
 
-// TODO also add unchecked here
-
 #include "convex_polygon.hpp"
 #include "interval.hpp"
 #include "point.hpp"

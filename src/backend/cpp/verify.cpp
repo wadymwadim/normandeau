@@ -190,26 +190,33 @@ struct TripleCenterRadius final {
         stable_pos{std::move(stable_pos_)} {}
 };
 
-static boost::optional<TripleCenterRadius>
-triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const ClosedRectangleQ& square) {
-
-    // TODO also do periodic check. That's important too
-
-    const std::array<PointQ, 4> corners{{square.lower_left(),
-                                         square.lower_right(),
-                                         square.upper_right(),
-                                         square.upper_left()}};
-
-    const auto size = corners.size();
+static boost::optional<std::array<Sign, 4>> find_signs(const LinComArrZ<XYEta>& line, const std::array<PointQ, 4>& corners) {
 
     std::array<Sign, 4> signs{};
-    for (size_t i = 0; i < size; ++i) {
-        signs.at(i) = line_sign_at_point(line, corners.at(i));
+    for (size_t i = 0; i < corners.size(); ++i) {
+
+        const auto result = eval(line, corners.at(i));
+
+        // We need to ensure that the points are sufficiently close to the line to remain in the same
+        // quadrant, so to speak. We need that -2 < result < 2, or that abs(result) < 2.
+        if ((result <= -2) || (result >= 2)) {
+            return boost::none;
+        }
+
+        signs.at(i) = rational_sign(result);
     }
 
-    std::vector<PointQ> positives{}; // 0-4 points
-    std::vector<PointQ> zeros{};     // 0, 1, or 2 points
+    return signs;
+}
+
+static std::tuple<std::vector<PointQ>, std::vector<PointQ>, std::vector<PointQ>>
+find_points(const std::array<PointQ, 4>& corners, const std::array<Sign, 4>& signs, const LinComArrZ<XYEta>& line) {
+
     std::vector<PointQ> negatives{}; // 0-4 points
+    std::vector<PointQ> zeros{};     // 0, 1, or 2 points
+    std::vector<PointQ> positives{}; // 0-4 points
+
+    const auto size = corners.size();
 
     for (size_t i = 0; i < size; ++i) {
 
@@ -256,17 +263,42 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
         }
     }
 
-    // Each negative point must be strictly inside the negative polygon, and
-    for (const auto& point : negatives) {
-        if (!geometry::element(point, info.stable_neg_info.polygon)) {
-            return boost::none;
-        }
+    return std::make_tuple(std::move(negatives), std::move(zeros), std::move(positives));
+}
+
+static boost::optional<TripleCenterRadius>
+triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const ClosedRectangleQ& square) {
+
+    const std::array<PointQ, 4> corners{{square.lower_left(),
+                                         square.lower_right(),
+                                         square.upper_right(),
+                                         square.upper_left()}};
+
+    const auto signs = find_signs(line, corners);
+
+    if (!signs) {
+        return boost::none;
     }
+
+    std::vector<PointQ> negatives{};
+    std::vector<PointQ> zeros{};
+    std::vector<PointQ> positives{};
+
+    std::tie(negatives, zeros, positives) = find_points(corners, *signs, line);
 
     if (!negatives.empty()) {
 
-        // Aaaaaaand all zero points must be inside polygon or on boundary
-        // Still have to do that
+        // Each negative point must be strictly inside the negative polygon
+        for (const auto& point : negatives) {
+            if (!geometry::element(point, info.stable_neg_info.polygon)) {
+                return boost::none;
+            }
+        }
+
+        //for (const auto& point : zeros) {
+            //// TODO check this too
+        //}
+
     }
 
     // Each zero point must be inside the line segment
@@ -274,18 +306,18 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
         if (!geometry::element(point, info.unstable_info.segment)) {
             return boost::none;
         }
-
     }
 
     if (!positives.empty()) {
-        // And check the positive points here too
-    }
 
-    // All positive points must be strictly inside the polygon
-    for (const auto& point : positives) {
-        if (!geometry::element(point, info.stable_pos_info.polygon)) {
-            return boost::none;
+        // All positive points must be strictly inside the polygon
+        for (const auto& point : positives) {
+            if (!geometry::element(point, info.stable_pos_info.polygon)) {
+                return boost::none;
+            }
         }
+        // TODO check this junk
+        // And we need that the zeros must be inside or on the boundary
     }
 
     auto stable_neg = find_center_radius(negatives, zeros);
