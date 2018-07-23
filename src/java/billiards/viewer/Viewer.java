@@ -65,6 +65,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -204,7 +205,10 @@ public final class Viewer {
 
     final Button loadCoverBtn = new Button();
 
-    final Button checkCoverButton = new Button();
+    final Button checkCoverBtn = new Button();
+    
+    final Button checkOneBtn = new Button();
+    final Pane checkOneWrap = new Pane();
 
     final TextField labelMainWindow = new TextField();
     final Button coverBtn = new Button();
@@ -279,9 +283,9 @@ public final class Viewer {
         });
 
         // TODO what do we do about this?
-        checkCoverButton.setText("Check Cover");
-        Utils.colorButton(checkCoverButton, Color.LIGHTPINK, clickColor);
-        checkCoverButton.setOnAction(e -> {
+        checkCoverBtn.setText("Check Cover");
+        Utils.colorButton(checkCoverBtn, Color.LIGHTPINK, clickColor);
+        checkCoverBtn.setOnAction(e -> {
         	
             if (currentCover.isPresent()) {
             	
@@ -333,8 +337,6 @@ public final class Viewer {
                 }
 
             } else {
-                // need to have some sort of message here, or just not have the button
-                // highlighted unless the cover is there
             	final Alert alert = new Alert(AlertType.INFORMATION);
 
                 alert.setTitle("Cover");
@@ -343,6 +345,26 @@ public final class Viewer {
                 
                 alert.showAndWait();
             }
+        });
+        
+        checkOneBtn.setText("Check this square");
+        checkOneBtn.setTooltip(Utils.toolTip("Run our proof on one square"));
+        Utils.colorButton(checkOneBtn, Color.LIGHTPINK, clickColor);
+        checkOneBtn.setOnAction(event -> {
+        	if (selectedRect != null) {
+        		//TODO
+        		
+        		
+        		
+        	} else {
+        		final Alert alert = new Alert(AlertType.INFORMATION);
+
+                alert.setTitle("Cover");
+                alert.setHeaderText("No square selected");
+                alert.setContentText("Please select a square before pressing this.");
+                
+                alert.showAndWait();
+        	}
         });
 
         labelMainWindow.setPrefWidth(80);
@@ -381,6 +403,7 @@ public final class Viewer {
             drawCBoxes[2] = -1;
             currentStorages.clear();
             selectedRect = null;
+            checkOneWrap.getChildren().clear();
             coverRects.clear();
             coverArea = Optional.empty();
             regionsImageView.setImage(new WritableImage(SIZE, SIZE));
@@ -509,10 +532,6 @@ public final class Viewer {
             textYField.setText(Double.toString(degreeY));
         });
 
-        // 'boundsCheckBox', 'labelMainWindow', autofiller have no place right now
-
-        // These next 9 blocks are for the navigation menu, they are always shown
-
         final HBox minHBox = new HBox();
         minHBox.setSpacing(0);
         minHBox.getChildren().addAll(xMinTextField, yMinTextField);
@@ -555,7 +574,7 @@ public final class Viewer {
         windowHBox1.setPadding(new Insets(10, 10, 10, 0));
         windowHBox1.setAlignment(Pos.CENTER);
 
-        final HBox windowHBox2 = new HBox(10, infoButton, clearBtn, resetBtn, checkCoverButton);
+        final HBox windowHBox2 = new HBox(10, infoButton, clearBtn, resetBtn, checkCoverBtn);
         windowHBox2.setPadding(new Insets(0, 10, 10, 0));
         windowHBox2.setAlignment(Pos.CENTER);
 
@@ -563,8 +582,10 @@ public final class Viewer {
         mouseCoordinatesLabel.setPadding(new Insets(0, 10, 10, 10));
 
         final VBox leftVBox = new VBox(10, windowHBox1, windowHBox2, zoomHBox, clickActionHBox,
-                backForthHBox, mouseCoordinatesLabel, textXHBox, textYHBox, textXLockHBox, textYLockHBox, codeSequencesGPane);
+                backForthHBox, mouseCoordinatesLabel, textXHBox, textYHBox, textXLockHBox, 
+                textYLockHBox, codeSequencesGPane, checkOneWrap);
         leftVBox.setPadding(new Insets(0, 10, 10, 10));
+        
         textXHBox.getChildren().addAll(textXLabel, textXField, textYLabel, textYField);
         textXHBox.setSpacing(10);
         textXHBox.setAlignment(Pos.CENTER);
@@ -726,6 +747,7 @@ public final class Viewer {
             final SortedSet<Storage> selectedStorages = new TreeSet<>();
             Color color = Color.TRANSPARENT;
             selectedRect = null;
+            checkOneWrap.getChildren().clear();
 
             currentStorages.clear();
             currentBounds.clear();
@@ -763,6 +785,7 @@ public final class Viewer {
 						if (optional.isPresent()) {
 
 							selectedRect = rect;
+							checkOneWrap.getChildren().add(checkOneBtn);
 
 							if (coverColorCycle.isSelected() && !coverColor.equals(Color.TRANSPARENT)) {
 								coverColor = ColorPicker.next(coverColor);
@@ -803,6 +826,7 @@ public final class Viewer {
 						if (optNeg.isPresent() && optUnst.isPresent() && optPos.isPresent()) {
 
 							selectedRect = rect;
+							checkOneWrap.getChildren().add(checkOneBtn);
 
 							if (coverColorCycle.isSelected() && !coverColor.equals(Color.TRANSPARENT)) {
 								coverColor = ColorPicker.next(coverColor);
