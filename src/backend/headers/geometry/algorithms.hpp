@@ -84,6 +84,39 @@ bool element(const Point<N>& point, const ConvexPolygon<N, Topology::Closed>& po
     return true;
 }
 
+// Element of the closure
+template <typename N>
+bool element_or_boundary(const Point<N>& point, const ConvexPolygon<N, Topology::Open>& polygon) {
+
+    for (size_t i = 0; i < polygon.size(); ++i) {
+
+        const auto& vi = polygon.vertex(i);
+        const auto& vii = polygon.vertex(i + 1);
+
+        const auto orient = Point<N>::orientation(vi, vii, point);
+
+        if (orient == 0) {
+            // The point is collinear with the side
+
+            // This polygon is closed, so points on the boundary
+            // are inside the polygon
+
+            // The polygon is strictly convex, so this is now
+            // equivalent to if the point is inside the segment
+            // (since there are no collinear sides)
+            const Segment<N, Topology::Closed> side{vi, vii};
+            return collinear_element(point, side);
+        } else if (orient < 0) {
+            // On the outside
+            return false;
+        }
+        // else it has positive orientation, so continue
+    }
+
+    // p is on the same side of every edge, so it is on the inside
+    return true;
+}
+
 template <typename N>
 bool element(const Point<N>& point, const ConvexPolygon<N, Topology::Open>& polygon) {
 
@@ -285,189 +318,5 @@ bool disjoint(const Shape1& shape1, const Shape2& shape2) {
 template <typename T, typename S>
 bool intersects(const T& a, const S& b) {
     return !disjoint(a, b);
-}
-
-// ----------------------------------------------------------------------------
-// Intersection
-// ----------------------------------------------------------------------------
-
-template <typename N>
-boost::variant<Empty, N, Interval<N, Topology::Closed>>
-intersection(const Interval<N, Topology::Closed>& a, const Interval<N, Topology::Closed>& b) {
-
-    const auto lower = max(a.lower(), b.lower());
-    const auto upper = min(a.upper(), b.upper());
-
-    const auto order = lower.compare(upper);
-
-    if (order > 0) {
-        // lower > upper, so empty set
-        return Empty{};
-    }
-
-    if (order == 0) {
-        // lower == upper, so a single point
-        return lower;
-    }
-
-    // lower < upper, so proper interval
-    return Interval<N, Topology::Closed>{lower, upper};
-}
-
-// Based on the Liang-Barsky Algorithm
-template <typename N>
-boost::variant<Empty, Point<N>, Segment<N, Topology::Closed>>
-intersection(const Rectangle<N, Topology::Closed>& rect, const Segment<N, Topology::Closed>& seg) {
-
-    const auto delta = seg.vector();
-
-    const std::array<std::pair<N, N>, 4> pqs{{{-delta.x, seg.start().x - rect.interval_x().lower()},
-                                              {delta.x, rect.interval_x().upper() - seg.start().x},
-                                              {-delta.y, seg.start().y - rect.interval_y().lower()},
-                                              {delta.y, rect.interval_y().upper() - seg.start().y}}};
-
-    N t0 = 0;
-    N t1 = 1;
-
-    for (const auto& pq : pqs) {
-
-        const auto& p = pq.first;
-        const auto& q = pq.second;
-
-        const auto psign = p.sign();
-        const auto qsign = q.sign();
-
-        if (psign < 0) {
-
-            N t = q / p;
-
-            if (t > t0) {
-                t0 = t;
-            }
-
-        } else if (psign > 0) {
-
-            N t = q / p;
-
-            if (t < t1) {
-                t1 = t;
-            }
-
-        } else {
-            // psign == 0
-
-            if (qsign < 0) {
-                // segment is parallel to the side and outside the rectangle
-                return Empty{};
-            }
-        }
-    }
-
-    const auto order = t0.compare(t1);
-
-    if (order > 0) {
-        // t0 > t1, so empty intersection
-        return Empty{};
-    }
-
-    if (order == 0) {
-        // t0 == t1, so single point intersection
-        auto point = delta * t0;
-        point += seg.start();
-        return point;
-    }
-
-    // Else t0 < t1, so intersection is a segment
-
-    auto new_start = delta * t0;
-    auto new_end = delta * t1;
-    new_start += seg.start();
-    new_end += seg.start();
-
-    return Segment<N, Topology::Closed>{new_start, new_end};
-}
-
-// This is essentially identical to the above code, except that if the endpoints of the segment are in
-// the intersection, then we return an empty set. This ensures that we only need to return closed segments.
-template <typename N>
-boost::variant<Empty, Point<N>, Segment<N, Topology::Closed>>
-special_intersection(const Rectangle<N, Topology::Closed>& rect, const Segment<N, Topology::Open>& seg) {
-
-    const auto delta = seg.vector();
-
-    const std::array<std::pair<N, N>, 4> pqs{{{-delta.x, seg.start().x - rect.interval_x().lower()},
-                                              {delta.x, rect.interval_x().upper() - seg.start().x},
-                                              {-delta.y, seg.start().y - rect.interval_y().lower()},
-                                              {delta.y, rect.interval_y().upper() - seg.start().y}}};
-
-    N t0 = 0;
-    N t1 = 1;
-
-    for (const auto& pq : pqs) {
-
-        const auto& p = pq.first;
-        const auto& q = pq.second;
-
-        const auto psign = p.sign();
-        const auto qsign = q.sign();
-
-        if (psign < 0) {
-
-            N t = q / p;
-
-            if (t > t0) {
-                t0 = t;
-            }
-
-        } else if (psign > 0) {
-
-            N t = q / p;
-
-            if (t < t1) {
-                t1 = t;
-            }
-
-        } else {
-            // psign == 0
-
-            if (qsign < 0) {
-                // segment is parallel to the side and outside the rectangle
-                return Empty{};
-            }
-        }
-    }
-
-    const auto order = t0.compare(t1);
-
-    if (order > 0) {
-        // t0 > t1, so empty intersection
-        return Empty{};
-    }
-
-    if (order == 0) {
-        // t0 == t1, so single point intersection
-
-        if (t0 == 0 || t0 == 1) {
-            // The endpoints are not in the intersection
-            return Empty{};
-        }
-
-        auto point = delta * t0;
-        point += seg.start();
-        return point;
-    }
-
-    // Else t0 < t1, so intersection is a segment
-    if (t0 == 0 || t1 == 1) {
-        // This is the single point of difference for the special intersection
-        return Empty{};
-    }
-
-    auto new_start = delta * t0;
-    auto new_end = delta * t1;
-    new_start += seg.start();
-    new_end += seg.start();
-
-    return Segment<N, Topology::Closed>{new_start, new_end};
 }
 }

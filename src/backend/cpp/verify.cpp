@@ -295,10 +295,12 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
             }
         }
 
-        //for (const auto& point : zeros) {
-            //// TODO check this too
-        //}
-
+        // And each zero must be within the closure of the polygon
+        for (const auto& point : zeros) {
+            if (!geometry::element_or_boundary(point, info.stable_neg_info.polygon)) {
+                return boost::none;
+            }
+        }
     }
 
     // Each zero point must be inside the line segment
@@ -316,8 +318,13 @@ triple_intersection(const TripleInfo& info, const LinComArrZ<XYEta>& line, const
                 return boost::none;
             }
         }
-        // TODO check this junk
-        // And we need that the zeros must be inside or on the boundary
+
+        // Ditto
+        for (const auto& point : zeros) {
+            if (!geometry::element_or_boundary(point, info.stable_pos_info.polygon)) {
+                return boost::none;
+            }
+        }
     }
 
     auto stable_neg = find_center_radius(negatives, zeros);
