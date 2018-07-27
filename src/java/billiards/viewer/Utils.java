@@ -13,11 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.regex.Pattern;
 
-import javafx.application.Platform;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -79,7 +76,7 @@ public final class Utils {
         return "-fx-base: #" + hex;
     }
 
-    public static void colorButton(final Button button, final Color color, final Color clicked) {
+    public static void colorButton(final Node button, final Color color, final Color clicked) {
         button.setStyle(hex(color));
         button.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> button.setStyle(hex(clicked)));
         button.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> button.setStyle(hex(color)));

@@ -51,6 +51,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -204,9 +205,10 @@ public final class Viewer {
     final Button infoButton = new Button();
 
     final Button loadCoverBtn = new Button();
+    final ComboBox<String> coversBox = new ComboBox<>();
 
     final Button checkCoverBtn = new Button();
-    
+
     final Button checkOneBtn = new Button();
     final Pane checkOneWrap = new Pane();
 
@@ -266,13 +268,37 @@ public final class Viewer {
 
         infoButton.setOnAction(event -> new InfoWindow(windowTitle, screenScale).show());
 
+
+        coversBox.getItems().addAll("100-105", "105-110", "110-112", "All");
+        coversBox.setTooltip(Utils.toolTip("Select which cover will be loaded."));
+        coversBox.setValue("100-105");
+        Utils.colorButton(coversBox, Color.SKYBLUE, clickColor);
+
         loadCoverBtn.setText("Load Cover");
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
             final DirectoryChooser chooser = new DirectoryChooser();
             chooser.setTitle("Choose a Cover Directory");
-
             final File dir = chooser.showDialog(mainWindow);
+
+            /*
+
+            final File dir; // = chooser.showDialog(mainWindow);
+            if (coversBox.getValue().equals("100-105")) {
+                dir = new File("coversfolder/105cover/");
+            } else if (coversBox.getValue().equals("105-110")) {
+                dir = new File("coversfolder/110cover/");
+            } else if (coversBox.getValue().equals("110-112")) {
+                dir = new File("coversfolder/112cover/");
+            } else if (coversBox.getValue().equals("All")) {
+                dir = new File("coversfolder/allcovers/");
+            } else {
+                System.out.println("Something went wrong when loading cover");
+                return;
+            }
+
+            */
+
 
             if (dir != null) {
             	clearBtn.fire();
@@ -286,9 +312,9 @@ public final class Viewer {
         checkCoverBtn.setText("Check Cover");
         Utils.colorButton(checkCoverBtn, Color.LIGHTPINK, clickColor);
         checkCoverBtn.setOnAction(e -> {
-        	
+
             if (currentCover.isPresent()) {
-            	
+
             	final Alert alert = new Alert(AlertType.CONFIRMATION);
 
                 alert.setTitle("Check Cover");
@@ -297,17 +323,17 @@ public final class Viewer {
                 		+ "even days. Continue?");
                 final Optional<ButtonType> response = alert.showAndWait();
                 if (response.isPresent() && response.get() == ButtonType.OK) {
-                	
+
                 	try {
 		                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
 		                                                                  currentCover.get());
 		                // Redirect the stdout and stderr so they are printed
 		                // builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 		                // builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-		                
+
 		                final Process process = builder.start();
-		                
-		                final BufferedReader reader = 
+
+		                final BufferedReader reader =
 		                		new BufferedReader(new InputStreamReader(process.getInputStream()));
 				        final StringBuilder strB = new StringBuilder();
 				        String line = null;
@@ -316,7 +342,7 @@ public final class Viewer {
 				        	strB.append("\n");
 				        }
 				        String output = strB.toString();
-				        
+
 				        BufferedReader readerErr = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				        StringBuilder strErr = new StringBuilder();
 				        String lineErr = null;
@@ -325,11 +351,11 @@ public final class Viewer {
 				        	strErr.append("\n");
 				        }
 				        String error = strErr.toString();
-				        
+
 				        process.waitFor();
 
 				        new Console(windowTitle, screenScale, output + "\n" + error).show();
-		                
+
 	                } catch (final Exception ex) {
 	                    new ErrorAlert(ex).showAndWait();
 	                    return;
@@ -342,27 +368,27 @@ public final class Viewer {
                 alert.setTitle("Cover");
                 alert.setHeaderText("No cover loaded");
                 alert.setContentText("Please load a cover before pressing this button.");
-                
+
                 alert.showAndWait();
             }
         });
-        
+
         checkOneBtn.setText("Check this square");
         checkOneBtn.setTooltip(Utils.toolTip("Run our proof on one square"));
         Utils.colorButton(checkOneBtn, Color.LIGHTPINK, clickColor);
         checkOneBtn.setOnAction(event -> {
         	if (selectedRect != null) {
         		//TODO
-        		
-        		
-        		
+
+
+
         	} else {
         		final Alert alert = new Alert(AlertType.INFORMATION);
 
                 alert.setTitle("Cover");
                 alert.setHeaderText("No square selected");
                 alert.setContentText("Please select a square before pressing this.");
-                
+
                 alert.showAndWait();
         	}
         });
@@ -397,7 +423,7 @@ public final class Viewer {
         clearBtn.setOnAction(event -> {
             // reset the boxes on the right
             codeSequencesGPane.getChildren().clear();
-            
+
             drawCBoxes[0] = -1;
             drawCBoxes[1] = -1;
             drawCBoxes[2] = -1;
@@ -570,11 +596,11 @@ public final class Viewer {
         backForthHBox.setAlignment(Pos.CENTER);
 
         final HBox windowHBox1 = new HBox(
-            10, covRectsColorBox, coverColorCycle, loadCoverBtn);
+            10, infoButton, clearBtn, coversBox, loadCoverBtn);
         windowHBox1.setPadding(new Insets(10, 10, 10, 0));
         windowHBox1.setAlignment(Pos.CENTER);
 
-        final HBox windowHBox2 = new HBox(10, infoButton, clearBtn, resetBtn, checkCoverBtn);
+        final HBox windowHBox2 = new HBox(10, resetBtn, covRectsColorBox, coverColorCycle, checkCoverBtn);
         windowHBox2.setPadding(new Insets(0, 10, 10, 0));
         windowHBox2.setAlignment(Pos.CENTER);
 
@@ -582,10 +608,10 @@ public final class Viewer {
         mouseCoordinatesLabel.setPadding(new Insets(0, 10, 10, 10));
 
         final VBox leftVBox = new VBox(10, windowHBox1, windowHBox2, zoomHBox, clickActionHBox,
-                backForthHBox, mouseCoordinatesLabel, textXHBox, textYHBox, textXLockHBox, 
+                backForthHBox, mouseCoordinatesLabel, textXHBox, textYHBox, textXLockHBox,
                 textYLockHBox, codeSequencesGPane, checkOneWrap);
         leftVBox.setPadding(new Insets(0, 10, 10, 10));
-        
+
         textXHBox.getChildren().addAll(textXLabel, textXField, textYLabel, textYField);
         textXHBox.setSpacing(10);
         textXHBox.setAlignment(Pos.CENTER);
@@ -619,7 +645,7 @@ public final class Viewer {
 
         // Scene
         final Scene scene = new Scene(bpane);
-        
+
         // Stage
         mainWindow.setTitle(windowTitle);
         mainWindow.setOnCloseRequest(event -> {
@@ -658,7 +684,7 @@ public final class Viewer {
 
     private void zoomAction() {
         // so between 0 and pi, and min < max
-    	
+
         double xMin;
 		double xMax;
 		double yMin;
@@ -740,7 +766,7 @@ public final class Viewer {
 
             // iterate over the onScreenSequences, and check which ones are positive
 
-            
+
             // for the point. We want the codes on the right to be sorted from smallest
             // to largest, since that makes life much easier
             // map and filter would be really nice right now
@@ -1191,7 +1217,7 @@ public final class Viewer {
                         -> 17 * Math.PI / 45 - x,
                         0, 17 * Math.PI / 45,
                         y -> 17 * Math.PI / 45 - y, 0, 17 * Math.PI / 45, pixelWriter, lineColor, false);
-        
+
         // IMPORTANT: This is the line x = y
         drawObliqueLine(x -> x, 0, Math.PI / 4, y -> y, 0, Math.PI / 4, pixelWriter, lineColor, false);
 
@@ -1259,9 +1285,9 @@ public final class Viewer {
                 }
             }
         }
-    } 
+    }
     */
-    
+
     private void renderCovSqr(final CoverSquare cov, final WritableImage image,
     		final Color colorInside, final Color colorBound) {
     	final PixelWriter pixelWriter = image.getPixelWriter();
