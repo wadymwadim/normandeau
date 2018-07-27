@@ -31,12 +31,10 @@ bool equations_positive(const std::vector<std::tuple<EqVec<Trig>, Coeff64, Coeff
 
 static bool covers_square(const StableInfo& info, const ClosedRectangleQ& square, const uint32_t bits) {
 
-    /*
     if (!geometry::subset(square, info.polygon)) {
         std::cout << "Failure: square is not a subset of polygon" << std::endl;
         return false;
     }
-    */
 
     Evaluator eval{bits};
 
