@@ -141,6 +141,7 @@ public final class Viewer {
 
     ArrayList<Storage> currentStorages = new ArrayList<>();
     ArrayList<ConvexPolygon> currentBounds = new ArrayList<>();
+    Storage currentStorage;
 
     Color currentColor = Color.RED;
 
@@ -282,7 +283,6 @@ public final class Viewer {
             }
         });
 
-        // TODO what do we do about this?
         checkCoverBtn.setText("Check Cover");
         Utils.colorButton(checkCoverBtn, Color.LIGHTPINK, clickColor);
         checkCoverBtn.setOnAction(e -> {
@@ -347,15 +347,22 @@ public final class Viewer {
             }
         });
         
-        checkOneBtn.setText("Check this square");
+        checkOneBtn.setText("Check This Square");
         checkOneBtn.setTooltip(Utils.toolTip("Run our proof on one square"));
         Utils.colorButton(checkOneBtn, Color.LIGHTPINK, clickColor);
         checkOneBtn.setOnAction(event -> {
         	if (selectedRect != null) {
-        		//TODO
-        		
-        		
-        		
+
+                final CodeSequence codeSeq = currentStorage.classCodeSeq;
+                final InitialAngles angles = currentStorage.angles;
+
+                final Optional<String> string = Wrapper.checkSquare(selectedRect, codeSeq, angles, currentCover.get());
+
+                if (string.isPresent()) {
+                    System.out.println(string.get());
+                } else {
+                    // Warning message
+                }
         	} else {
         		final Alert alert = new Alert(AlertType.INFORMATION);
 
@@ -794,6 +801,7 @@ public final class Viewer {
 
 							final Storage.Stable stable = (Storage.Stable) optional.get();
 							selectedStorages.add(stable);
+                            currentStorage = stable;
 
 							if (coverColor.equals(Color.TRANSPARENT)) {
 								color = coverRects.getColor(rect);

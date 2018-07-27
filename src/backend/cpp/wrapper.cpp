@@ -3,6 +3,7 @@
 #include "equations.hpp"
 #include "parse.hpp"
 #include "wrapper.hpp"
+#include "check.hpp"
 
 static std::string serialize(const std::vector<PointQ>& points) {
 
@@ -106,4 +107,27 @@ void cleanup_code_info(const CCodeInfo* const c_code_info) {
     delete[] c_code_info->points;
     delete[] c_code_info->sin_equations;
     delete[] c_code_info->cos_equations;
+}
+
+char* check_square(const int64_t numerx, const int64_t numery, const int64_t denom,
+                     const char* const code_sequence_ptr, const char* const initial_angles_ptr,
+                     const char* const cover_dir) {
+
+    try {
+        const auto code_sequence = parse_code_sequence(code_sequence_ptr);
+        const auto initial_angles = parse_initial_angles(initial_angles_ptr);
+
+        const auto str = check_square(numerx, numery, denom, code_sequence, initial_angles, cover_dir);
+
+        return to_cstr(str);
+
+    } catch (const std::exception& except) {
+        std::cerr << except.what() << std::endl;
+
+        return nullptr;
+    }
+}
+
+void free_string(const char* const str) {
+    delete[] str;
 }

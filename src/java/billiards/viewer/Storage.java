@@ -126,7 +126,6 @@ public abstract class Storage implements Comparable<Storage> {
     public boolean isPositive(final double rx, final double ry) {
         for (final Equation equation : this.equations) {
             final double result = equation.evalf(rx, ry);
-            // TODO replace this with something simpler
             if (Precision.compareTo(result, 0, 1e-14) < 0) {
                 return false;
             }

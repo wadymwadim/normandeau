@@ -1,8 +1,12 @@
 package billiards.wrapper;
 
 import billiards.codeseq.CodePair;
+import billiards.codeseq.CodeSequence;
+import billiards.codeseq.InitialAngles;
+import billiards.math.CoverSquare;
 
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 
 import java.util.Optional;
 
@@ -42,6 +46,28 @@ public final class Wrapper {
             return Optional.empty();
         } else {
             throw new RuntimeException("unknown return value " + rval);
+        }
+    }
+
+    private static native Pointer check_square(long numerX, long numerY, long denom, String code_seq, String angles, String coverDir);
+    private static native void free_string(Pointer ptr);
+
+    public static Optional<String> checkSquare(final CoverSquare square, final CodeSequence codeSeq, final InitialAngles angles, final String coverDir) {
+
+        final long numerX = square.numerX;
+        final long numerY = square.numerY;
+        final long denom = 1 << square.denom;
+
+        final Pointer ptr = check_square(numerX, numerY, denom, codeSeq.toString(), angles.toString(), coverDir);
+
+        final String string = ptr.getString(0);
+
+        free_string(ptr);
+
+        if (string == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(string);
         }
     }
 }

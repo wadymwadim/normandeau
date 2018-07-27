@@ -1,9 +1,10 @@
 package billiards.math;
 
 public class CoverSquare {
-	final long numerX;
-	final long numerY;
-	final byte denom;
+
+	public final long numerX;
+	public final long numerY;
+	public final byte denom;
 	
 	// the value is to be interpreted as num / 2^denom
 	private CoverSquare(final long numerX, final long numerY, final byte denomPower) {
