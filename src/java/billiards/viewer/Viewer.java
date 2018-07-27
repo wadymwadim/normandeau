@@ -54,6 +54,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Alert.AlertType;
@@ -66,7 +67,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -211,7 +212,8 @@ public final class Viewer {
     final Button checkCoverBtn = new Button();
 
     final Button checkOneBtn = new Button();
-    final Pane checkOneWrap = new Pane();
+    final VBox checkOneWrap = new VBox(10);
+    final TextArea checkOneInfo = new TextArea();
 
     final TextField labelMainWindow = new TextField();
     final Button coverBtn = new Button();
@@ -378,17 +380,19 @@ public final class Viewer {
         Utils.colorButton(checkOneBtn, Color.LIGHTPINK, clickColor);
         checkOneBtn.setOnAction(event -> {
         	if (selectedRect != null) {
+                try {
+                    final CodeSequence codeSeq = currentStorage.classCodeSeq;
+                    final InitialAngles angles = currentStorage.angles;
 
-                final CodeSequence codeSeq = currentStorage.classCodeSeq;
-                final InitialAngles angles = currentStorage.angles;
+                    final Optional<String> string = Wrapper.checkSquare(selectedRect, codeSeq, angles, currentCover.get());
+                    checkOneInfo.setText(string.get());
+                    checkOneWrap.getChildren().add(checkOneInfo);
+                    VBox.setVgrow(checkOneInfo, Priority.ALWAYS);
 
-                final Optional<String> string = Wrapper.checkSquare(selectedRect, codeSeq, angles, currentCover.get());
-
-                if (string.isPresent()) {
-                    System.out.println(string.get());
-                } else {
-                    // Warning message
+                } catch (Exception ex) {
+                    new ErrorAlert(ex).show();
                 }
+
         	} else {
         		final Alert alert = new Alert(AlertType.INFORMATION);
 
@@ -399,6 +403,7 @@ public final class Viewer {
                 alert.showAndWait();
         	}
         });
+        VBox.setVgrow(checkOneWrap, Priority.ALWAYS);
 
         labelMainWindow.setPrefWidth(80);
 
