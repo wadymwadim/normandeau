@@ -249,23 +249,23 @@ static CodeInfo calculate_stable_code_info(const CodePair& code_pair, const Code
 
     // Some of the generated equations are duplicates, so make sure they are in a std::set
     Curves equations{};
-    if (code_type == CodeType::OSO) {
+    if (code_type == CodeType::SON) {
 
         const auto code_angles_pi = transform(code_angles, xyz_to_xypi);
 
-        const auto shooting_vector = shooting_vector_open(code_sequence, code_angles_pi);
+        const auto shooting_vector = shooting_vector_odd(code_sequence, code_angles_pi);
         equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, c, rx, ry);
         //equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, polygon);
 
-    } else if (code_type == CodeType::CS) {
+    } else if (code_type == CodeType::SEP) {
 
         const auto code_angles_eta = transform(code_angles, xyz_to_xyeta);
 
-        const auto shooting_vector = shooting_vector_closed(code_sequence, code_angles_eta);
+        const auto shooting_vector = shooting_vector_perp(code_sequence, code_angles_eta);
         equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, c, rx, ry);
         //equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, polygon);
 
-    } else if (code_type == CodeType::OSNO) {
+    } else if (code_type == CodeType::SEN) {
 
         const auto shooting_vector = unfold.shooting_vector_general();
         equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, c, rx, ry);
@@ -308,14 +308,14 @@ static CodeInfo calculate_unstable_code_info(const CodePair& code_pair, const Co
     // Some of the generated equations are duplicates, so make sure they are in a std::set
     Curves equations{};
 
-    if (code_type == CodeType::CNS) {
+    if (code_type == CodeType::UEP) {
 
         const auto code_angles_eta = transform(code_angles, xyz_to_xyeta);
 
-        const auto shooting_vector = shooting_vector_closed(code_sequence, code_angles_eta);
+        const auto shooting_vector = shooting_vector_perp(code_sequence, code_angles_eta);
         equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, c, rx, ry);
 
-    } else if (code_type == CodeType::ONS) {
+    } else if (code_type == CodeType::UEN) {
 
         const auto shooting_vector = unfold.shooting_vector_general();
         equations = unfold.generate_curves(shooting_vector.first, shooting_vector.second, initial_angles, c, rx, ry);

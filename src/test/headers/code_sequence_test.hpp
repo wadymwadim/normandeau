@@ -86,11 +86,11 @@ BOOST_AUTO_TEST_CASE(test_order) {
 
 BOOST_AUTO_TEST_CASE(test_type) {
     const std::vector<std::pair<std::vector<CodeNumber>, CodeType>> types = {
-        {{1, 1, 1}, CodeType::OSO},
-        {{2, 2}, CodeType::CNS},
-        {{1, 1, 2, 1, 3, 2}, CodeType::ONS},
-        {{1, 1, 1, 1, 2, 1, 1, 1, 1, 2}, CodeType::CS},
-        {{1, 1, 2, 2, 1, 1, 3, 3}, CodeType::OSNO}};
+        {{1, 1, 1}, CodeType::SON},
+        {{2, 2}, CodeType::UEP},
+        {{1, 1, 2, 1, 3, 2}, CodeType::UEN},
+        {{1, 1, 1, 1, 2, 1, 1, 1, 1, 2}, CodeType::SEP},
+        {{1, 1, 2, 2, 1, 1, 3, 3}, CodeType::SEN}};
 
     for (const auto& p : types) {
         const auto code_seq = CodeSequence{p.first};

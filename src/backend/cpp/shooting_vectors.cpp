@@ -37,53 +37,53 @@ static LinComArrZ<XYPi> shooting_angle_odd(const CodeSequence& code_sequence, co
     return shooting_angle;
 }
 
-static LinComArrZ<XYEta> shooting_angle_closed(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYEta>>& code_angles) {
+static LinComArrZ<XYEta> shooting_angle_perp(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYEta>>& code_angles) {
 
-    const auto closed_index = *code_sequence.closed_index();
+    const auto perp_index = *code_sequence.perp_index();
 
     const auto& code_numbers = code_sequence.numbers();
 
-    const auto closed_number = code_numbers.at(closed_index);
+    const auto perp_number = code_numbers.at(perp_index);
 
-    const auto& closed_angle = code_angles.at(closed_index);
+    const auto& perp_angle = code_angles.at(perp_index);
 
-    // theta_{closed_index} = pi / 2 - closed_number / 2 * closed_angle
-    const LinComArrZ<XYEta> perp_angle = [&]() {
+    // theta_{perp_index} = pi / 2 - perp_number / 2 * perp_angle
+    const LinComArrZ<XYEta> angle = [&]() {
         LinComArrZ<XYEta> builder{0, 0, 1};
-        builder.sub(closed_number / 2, closed_angle); // closed_number is guaranteed to be even
+        builder.sub(perp_number / 2, perp_angle); // perp_number is guaranteed to be even
         return builder;
     }();
 
     // now we derive another expression for the perp_angle and solve for the shooting angle
     LinComArrZ<XYEta> running_sum{};
 
-    for (size_t i = 0; i < closed_index; i += 1) {
+    for (size_t i = 0; i < perp_index; i += 1) {
         running_sum.scale(-1);
 
-        const auto number = code_numbers.at(i);
-        const auto& angle = code_angles.at(i);
+        const auto code_number = code_numbers.at(i);
+        const auto& code_angle = code_angles.at(i);
 
-        running_sum.sub(number, angle);
+        running_sum.sub(code_number, code_angle);
     }
 
     LinComArrZ<XYEta> shooting_angle{};
-    if (closed_index % 2 == 0) {
-        // shooting_angle + running_sum = perp_angle
-        // => shooting_angle = perp_angle - running_sum;
-        shooting_angle.add(perp_angle);
+    if (perp_index % 2 == 0) {
+        // shooting_angle + running_sum = angle
+        // => shooting_angle = angle - running_sum;
+        shooting_angle.add(angle);
         shooting_angle.sub(running_sum);
     } else {
-        // pi - shooting_angle + running_sum = perp_angle
-        // => shooting_angle = running_sum - perp_angle + pi
+        // pi - shooting_angle + running_sum = angle
+        // => shooting_angle = running_sum - angle + pi
         shooting_angle.add(running_sum);
-        shooting_angle.sub(perp_angle);
+        shooting_angle.sub(angle);
         shooting_angle.add(2, XYEta::Eta);
     }
 
     return shooting_angle;
 }
 
-std::pair<LinComMapZ<Cos<LinComArrZ<XY>>>, LinComMapZ<Sin<LinComArrZ<XY>>>> shooting_vector_open(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYPi>>& code_angles) {
+std::pair<LinComMapZ<Cos<LinComArrZ<XY>>>, LinComMapZ<Sin<LinComArrZ<XY>>>> shooting_vector_odd(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYPi>>& code_angles) {
 
     auto shooting_angle = shooting_angle_odd(code_sequence, code_angles);
 
@@ -103,9 +103,9 @@ std::pair<LinComMapZ<Cos<LinComArrZ<XY>>>, LinComMapZ<Sin<LinComArrZ<XY>>>> shoo
     return {cos_builder, sin_builder};
 }
 
-std::pair<LinComMapZ<Sin<LinComArrZ<XY>>>, LinComMapZ<Cos<LinComArrZ<XY>>>> shooting_vector_closed(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYEta>>& code_angles) {
+std::pair<LinComMapZ<Sin<LinComArrZ<XY>>>, LinComMapZ<Cos<LinComArrZ<XY>>>> shooting_vector_perp(const CodeSequence& code_sequence, const std::vector<LinComArrZ<XYEta>>& code_angles) {
 
-    auto shooting_angle = shooting_angle_closed(code_sequence, code_angles);
+    auto shooting_angle = shooting_angle_perp(code_sequence, code_angles);
 
     // make it polar
     shooting_angle.scale(-1);

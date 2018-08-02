@@ -14,13 +14,13 @@ class CodeSequence final {
     using value_type = typename decltype(code_numbers)::value_type;
     using const_iterator = typename decltype(code_numbers)::const_iterator;
 
-    explicit CodeSequence(const std::vector<CodeNumber>& code_numbers_);
+    explicit CodeSequence(const std::vector<CodeNumber>& numbers);
 
     const_iterator begin() const;
 
     const_iterator end() const;
 
-    boost::optional<size_t> closed_index() const;
+    boost::optional<size_t> perp_index() const;
 
     LinComArrZ<XYEta> constraint(const InitialAngles& initial_angles) const;
 
@@ -30,11 +30,11 @@ class CodeSequence final {
 
     CodeNumber sum() const;
 
+    bool is_stable() const;
+
     bool is_odd() const;
 
-    bool is_closed() const;
-
-    bool is_stable() const;
+    bool is_perp() const;
 
     CodeType type() const;
 
@@ -44,8 +44,6 @@ class CodeSequence final {
         return code_numbers;
     }
 };
-
-int compare(const CodeSequence& lhs, const CodeSequence& rhs);
 
 bool operator==(const CodeSequence& lhs, const CodeSequence& rhs);
 

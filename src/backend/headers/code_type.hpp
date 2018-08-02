@@ -3,11 +3,11 @@
 #include <ostream>
 
 enum class CodeType {
-    OSO,  // open stable odd
-    OSNO, // open stable not odd
-    ONS,  // open not stable
-    CS,   // closed stable
-    CNS,  // closed not stable
+    SON, // stable odd nonperp
+    SEP, // stable even perp
+    SEN, // stable even nonperp
+    UEP, // unstable even perp
+    UEN, // unstable even nonperp
 };
 
 std::ostream& operator<<(std::ostream& os, const CodeType code_type);
