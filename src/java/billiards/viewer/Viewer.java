@@ -73,7 +73,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Affine;
-import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -272,7 +272,7 @@ public final class Viewer {
         infoButton.setOnAction(event -> new InfoWindow(windowTitle, screenScale).show());
 
 
-        coversBox.getItems().addAll("100-105", "105-110", "110-112", "All");
+        coversBox.getItems().addAll("100-105", "105-110", "110-112", "112-112.1", "112.1-112.2", "112.2-112.3", "All");
         coversBox.setTooltip(Utils.toolTip("Select which cover will be loaded."));
         coversBox.setValue("100-105");
         Utils.colorButton(coversBox, Color.SKYBLUE, clickColor);
@@ -280,28 +280,43 @@ public final class Viewer {
         loadCoverBtn.setText("Load Cover");
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
-            final DirectoryChooser chooser = new DirectoryChooser();
-            chooser.setTitle("Choose a Cover Directory");
-            final File dir = chooser.showDialog(mainWindow);
+
+            final FileChooser chooser = new FileChooser();
+            chooser.setTitle(windowTitle);
+            final File dir = chooser.showOpenDialog(mainWindow);
 
             /*
-
-            final File dir; // = chooser.showDialog(mainWindow);
+            final File dir;
             if (coversBox.getValue().equals("100-105")) {
                 dir = new File("coversfolder/105cover/");
+
             } else if (coversBox.getValue().equals("105-110")) {
                 dir = new File("coversfolder/110cover/");
+
             } else if (coversBox.getValue().equals("110-112")) {
                 dir = new File("coversfolder/112cover/");
+
+            } else if (coversBox.getValue().equals("112-122.1")) {
+                dir = new File("coversfolder/112_1cover/");
+
+            } else if (coversBox.getValue().equals("112.1-122.2")) {
+                dir = new File("coversfolder/112_2cover/");
+
+            } else if (coversBox.getValue().equals("112.2-122.3")) {
+                dir = new File("coversfolder/112_3cover/");
+
             } else if (coversBox.getValue().equals("All")) {
                 dir = new File("coversfolder/allcovers/");
+
             } else {
-                System.out.println("Something went wrong when loading cover");
+                final Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Load Cover");
+                alert.setHeaderText("Error in Load");
+                alert.setContentText("Cover folder or files might be missing");
+                alert.showAndWait();
                 return;
             }
-
             */
-
 
             if (dir != null) {
             	clearBtn.fire();
