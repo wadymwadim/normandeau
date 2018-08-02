@@ -151,8 +151,6 @@ std::set<LinComArrZ<XYEta>> calculate_bounding_inequalities(const std::vector<Co
     std::set<LinComArrZ<XYEtaPhi>> positive_phi{};
     std::set<LinComArrZ<XYEtaPhi>> negative_phi{};
 
-    // unfortunately, C++ doesn't have a zip feature, so
-    // we have to just iterate
     for (size_t i = 0; i < code_nums_angles.size(); ++i) {
         const auto code_number = code_nums_angles.at(i).first;
         const auto code_angle = code_nums_angles.at(i).second;
@@ -175,13 +173,11 @@ std::set<LinComArrZ<XYEta>> calculate_bounding_inequalities(const std::vector<Co
                 negative_phi.insert(equation);
             } else {
                 std::ostringstream err{};
-                err << "phi_coeff " << phi_coeff << " is not 1 or -1";
+                err << "calculate_bounding_inequalities: phi_coeff " << phi_coeff << " is not 1 or -1";
                 throw std::runtime_error(err.str());
             }
         }
     }
 
-    const auto no_phi_inequalities = eliminate_phi(positive_phi, negative_phi);
-
-    return no_phi_inequalities;
+    return eliminate_phi(positive_phi, negative_phi);
 }
