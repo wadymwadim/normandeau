@@ -70,7 +70,7 @@ struct Divide;
 using Cover = boost::variant<Empty, Single, Triple, Divide>;
 
 struct Divide final {
-    // TODO use std::unique_ptr<std::array<Cover, 4>>?
+    // TODO use std::unique_ptr<std::array<Cover, 4>>
     std::vector<Cover> quarters;
 
     explicit Divide(Cover&& cover0, Cover&& cover1, Cover&& cover2, Cover&& cover3)

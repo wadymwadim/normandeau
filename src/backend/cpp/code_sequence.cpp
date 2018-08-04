@@ -22,14 +22,6 @@ static XYZ next_angle(const XYZ prev, const XYZ curr, const CodeNumber number) {
 
 static bool is_valid(const std::vector<CodeNumber>& numbers, const size_t end) {
 
-    // A sequence of numbers is a valid code sequence iff the code angles wrap around
-    // correctly at the beginning and end.
-
-    // Strictly speaking, sequences of length one are allowed if they
-    // consist of a single even number (odd ones are invalid).
-    // However, all these sequences are trivially empty, so there is no point
-    // in considering them.
-
     auto prev = XYZ::X; // On the last number
     auto curr = XYZ::Y; // On the first number
 
@@ -67,7 +59,7 @@ static size_t smallest_index(const std::vector<CodeNumber>& code_numbers) {
     return size;
 }
 
-static void minimal_rotation(std::vector<CodeNumber>& code_numbers) {
+static void smallest_rotation_reversal(std::vector<CodeNumber>& code_numbers) {
 
     // This must be a copy, not a reference, since we mutate code_numbers
     auto min = code_numbers;
@@ -117,7 +109,7 @@ static void validate(const std::vector<CodeNumber>& numbers) {
     const auto valid = is_valid(numbers, numbers.size());
 
     if (!valid) {
-        throw std::runtime_error("CodeSequence: invalid parity pattern");
+        throw std::runtime_error("CodeSequence: invalid pattern");
     }
 }
 
@@ -131,7 +123,7 @@ CodeSequence::CodeSequence(const std::vector<CodeNumber>& numbers) {
         code_numbers.push_back(numbers.at(i));
     }
 
-    minimal_rotation(code_numbers);
+    smallest_rotation_reversal(code_numbers);
 }
 
 CodeSequence::const_iterator CodeSequence::begin() const {
@@ -169,10 +161,7 @@ static bool is_palindrome(const std::vector<CodeNumber>& code_numbers, const siz
 
 boost::optional<size_t> CodeSequence::perp_index() const {
 
-    // The sum of an odd sequence is odd, and then doubling it makes it even
-    // (with a single factor of 2). Perpendicular sequences always have a sum
-    // that is a multiple of 4, so odd sequences are never perpendicular
-    // (but what if you double it again?)
+    // Odd sequences are never perpendicular
     if (is_odd()) {
         return boost::none;
     }
@@ -196,7 +185,6 @@ boost::optional<size_t> CodeSequence::perp_index() const {
             // l2 = ---__
             // need l1 == l2.reverse()
 
-            // check if l1 == l2.reverse()
             if (is_palindrome(code_numbers, i)) {
                 return i;
             }
@@ -212,9 +200,8 @@ LinComArrZ<XYEta> CodeSequence::constraint(const InitialAngles& initial_angles) 
     const auto first = initial_angles.first;
     const auto second = initial_angles.second;
 
-    // all odd sequences are stable
+    // All odd sequences are stable, so return zero
     if (is_odd()) {
-        // Return zero
         return LinComArrZ<XYEta>{};
     }
 
@@ -339,6 +326,8 @@ CodeNumber CodeSequence::number(const size_t i) const {
     return code_numbers.at(i);
 }
 
+// We order code sequences using a length-lex ordering (first compare them by length,
+// and then lexicographically).
 static int compare(const CodeSequence& lhs, const CodeSequence& rhs) {
 
     const auto lhs_size = lhs.length();

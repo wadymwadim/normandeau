@@ -3,9 +3,6 @@
 
 #include "parse.hpp"
 
-// This file is intended for parsing strings for the outside world, eg. user input or files
-// database/deserialize.cpp is intended for parsing things from the database
-
 CodeSequence parse_code_sequence(const std::string& str) {
 
     const auto strs = split(str, " ");
@@ -33,7 +30,7 @@ InitialAngles parse_initial_angles(const std::string& str) {
     } else if (str == "zy") {
         return InitialAngles{XYZ::Z, XYZ::Y};
     } else {
-        throw std::runtime_error("Unable to parse initial angles " + str);
+        throw std::runtime_error("parse_initial_angles: unable to parse: " + str);
     }
 }
 
@@ -105,7 +102,6 @@ LinComArrZ<XY> parse_lin_com_arr_xy(const std::string& str) {
     return builder;
 }
 
-// TODO there has to be a nice way than this
 LinComArrZ<XYPi> parse_lin_com_arr_xypi(const std::string& str) {
 
     LinComArrZ<XYPi> builder{};

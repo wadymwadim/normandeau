@@ -2,8 +2,6 @@
 
 namespace geometry {
 
-struct Empty {};
-
 enum class Topology {
     Open,
     Closed,
