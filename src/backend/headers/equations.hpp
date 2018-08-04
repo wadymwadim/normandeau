@@ -3,25 +3,6 @@
 #include "cover.hpp"
 
 template <template <typename> class Trig>
-Coeff64 gradient_bound(const LinComMapZ<Trig<LinComArrZ<XY>>>& eq) {
-
-    Coeff64 sum = 0;
-
-    for (const auto& kv : eq) {
-
-        const auto coeff = kv.second;
-
-        const auto& arg = kv.first.arg;
-        const auto x_coeff = arg.coeff(XY::X);
-        const auto y_coeff = arg.coeff(XY::Y);
-
-        sum += math::abs(coeff) * (math::abs(x_coeff) + math::abs(y_coeff));
-    }
-
-    return sum;
-}
-
-template <template <typename> class Trig>
 EqVec<Trig> map_to_vec(const EqMap<Trig>& eq) {
 
     EqVec<Trig> vec{};
@@ -46,13 +27,12 @@ struct CodeInfo final {
     std::set<EqMap<Sin>> sin_equations;
     std::set<EqMap<Cos>> cos_equations;
 
-    // TODO move?
-    explicit CodeInfo(const std::vector<PointQ>& points_,
-                      const std::set<EqMap<Sin>>& sin_equations_,
-                      const std::set<EqMap<Cos>>& cos_equations_)
-        : points{points_},
-          sin_equations{sin_equations_},
-          cos_equations{cos_equations_} {}
+    explicit CodeInfo(std::vector<PointQ> points_,
+                      std::set<EqMap<Sin>> sin_equations_,
+                      std::set<EqMap<Cos>> cos_equations_)
+        : points{std::move(points_)},
+          sin_equations{std::move(sin_equations_)},
+          cos_equations{std::move(cos_equations_)} {}
 };
 
 struct StableInfo {
@@ -103,12 +83,12 @@ struct TripleInfo {
     UnstableInfo unstable_info;
     StableInfo stable_pos_info;
 
-    explicit TripleInfo(const StableInfo& stable_neg_info_,
-                        const UnstableInfo& unstable_info_,
-                        const StableInfo& stable_pos_info_)
-        : stable_neg_info{stable_neg_info_},
-          unstable_info{unstable_info_},
-          stable_pos_info{stable_pos_info_} {}
+    explicit TripleInfo(StableInfo stable_neg_info_,
+                        UnstableInfo unstable_info_,
+                        StableInfo stable_pos_info_)
+        : stable_neg_info{std::move(stable_neg_info_)},
+          unstable_info{std::move(unstable_info_)},
+          stable_pos_info{std::move(stable_pos_info_)} {}
 };
 
 CodeInfo calculate_code_info(const CodePair& code_pair);

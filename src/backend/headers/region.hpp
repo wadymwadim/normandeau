@@ -9,34 +9,32 @@ Rational eval(const LinComArrZ<XYEta>& equation, const PointQ& point);
 
 Sign rational_sign(const Rational& rat);
 
-class RationalLineSegment final {
+struct RationalLineSegment {
 
-  public:
     PointQ point0;
     LinComArrZ<XYEta> line0;
     PointQ point1;
     LinComArrZ<XYEta> line1;
 
-    explicit RationalLineSegment(const PointQ& point0_,
+    explicit RationalLineSegment(PointQ point0_,
                                  const LinComArrZ<XYEta>& line0_,
-                                 const PointQ& point1_,
+                                 PointQ point1_,
                                  const LinComArrZ<XYEta>& line1_)
-        : point0{point0_},
+        : point0{std::move(point0_)},
           line0{line0_},
-          point1{point1_},
-          line1{line1_} {
-    }
+          point1{std::move(point1_)},
+          line1{line1_} {}
 };
 
 boost::optional<RationalLineSegment> calculate_bounding_line_segment(const std::vector<CodeNumber>& code_numbers, const std::vector<XYZ>& code_angles, const LinComArrZ<XYEta>& constraint);
 
-class RationalPair final {
-  public:
+struct RationalPair {
+
     PointQ point;
     LinComArrZ<XYEta> side_line;
 
-    explicit RationalPair(const PointQ& point_, const LinComArrZ<XYEta>& side_line_)
-        : point{point_},
+    explicit RationalPair(PointQ point_, const LinComArrZ<XYEta>& side_line_)
+        : point{std::move(point_)},
           side_line{side_line_} {
     }
 };
