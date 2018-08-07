@@ -296,13 +296,13 @@ public final class Viewer {
             } else if (coversBox.getValue().equals("110-112")) {
                 dir = new File("coversfolder/112cover/");
 
-            } else if (coversBox.getValue().equals("112-122.1")) {
+            } else if (coversBox.getValue().equals("112-112.1")) {
                 dir = new File("coversfolder/112_1cover/");
 
-            } else if (coversBox.getValue().equals("112.1-122.2")) {
+            } else if (coversBox.getValue().equals("112.1-112.2")) {
                 dir = new File("coversfolder/112_2cover/");
 
-            } else if (coversBox.getValue().equals("112.2-122.3")) {
+            } else if (coversBox.getValue().equals("112.2-12.3")) {
                 dir = new File("coversfolder/112_3cover/");
 
             } else if (coversBox.getValue().equals("All")) {
