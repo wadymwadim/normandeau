@@ -32,7 +32,7 @@ So far, it is not known whether every periodic path will define a connected regi
 
 # Checking the Cover
 
-The best way to check the cover is to click on one square, and then press "Check this Square". You will be presented with info about the square and the code sequence that covers it. The coordinates of the square will be in rational coordinates, and the exact equations of the code are given. We have already checked that every square is covered, but To verify for yourself you should confirm that the region where every equation is positive contains the entire square.
+The best way to check the cover is to click on one square, and then press "Check this Square". You will be presented with info about the square and the code sequence that covers it. The coordinates of the square will be in rational coordinates, and the exact equations of the code are given. In the paper, the origin of these equations and the way we checked every square is explained, but to verify for yourself you should confirm that the region where every equation is positive contains the entire square.
 
 'Check Cover' is an automation of this process, it will verify that the equtions of the code sequence assigned to each square are positive over it. Due to the size of the proof, in order to trust that the checker is indeed checking the squares correctly, we recommend that you read through the code. The details about how our check works and is rigorous are in the paper.
 

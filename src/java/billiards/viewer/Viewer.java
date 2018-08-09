@@ -72,6 +72,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Affine;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 public final class Viewer {
@@ -274,11 +275,11 @@ public final class Viewer {
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
 
-            //final FileChooser chooser = new FileChooser();
-            //chooser.setTitle(windowTitle);
-            //final File dir = chooser.showOpenDialog(mainWindow);
+            final DirectoryChooser chooser = new DirectoryChooser();
+            chooser.setTitle(windowTitle);
+            final File dir = chooser.showDialog(mainWindow);
 
-
+            /*
             final File dir;
             if (coversBox.getValue().equals("100-105")) {
                 dir = new File("coversfolder/105cover/");
@@ -309,7 +310,7 @@ public final class Viewer {
                 alert.showAndWait();
                 return;
             }
-
+            */
 
             if (dir != null) {
             	clearBtn.fire();
