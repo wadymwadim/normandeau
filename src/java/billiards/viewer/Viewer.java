@@ -45,7 +45,6 @@ import java.util.function.DoubleUnaryOperator;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -73,8 +72,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Affine;
-import javafx.stage.FileChooser;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public final class Viewer {
@@ -83,11 +80,7 @@ public final class Viewer {
     private static final double TipOpenDelay = 2;
     private static final double TipCloseDelay = 20;
 
-	final static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-	// 768 is the usual hieght of a screen
-	final static double screenScale = screen.getHeight() / 1080;
-
-    private static final int SIZE = (int) (600 * screenScale);
+    private static final int SIZE = (700);
 
     // IMPORTANT: This is the color of the 90 and 80 lines and any additional lines
     private static final Color lineColor = Color.MAGENTA;
@@ -235,7 +228,7 @@ public final class Viewer {
         zoomScaleLabel.setText("Zoom Scale:");
         zoomScaleText.setText("2");
         zoomScaleText.setTooltip(Utils.toolTip("The scale that you magnify and demagnify by"));
-        zoomScaleText.setPrefWidth(55 * screenScale);
+        zoomScaleText.setPrefWidth(55);
         zoomScaleText.setStyle(textBoxColor);
 
         backwardSquareButton.setText("Backward");
@@ -269,7 +262,7 @@ public final class Viewer {
                                             + " a code sequence"));
         Utils.colorButton(infoButton, Color.LIGHTPINK, clickColor);
 
-        infoButton.setOnAction(event -> new InfoWindow(windowTitle, screenScale).show());
+        infoButton.setOnAction(event -> new InfoWindow(windowTitle).show());
 
 
         coversBox.getItems().addAll("100-105", "105-110", "110-112", "112-112.1", "112.1-112.2", "112.2-112.3", "All");
@@ -281,11 +274,11 @@ public final class Viewer {
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
 
-            final FileChooser chooser = new FileChooser();
-            chooser.setTitle(windowTitle);
-            final File dir = chooser.showOpenDialog(mainWindow);
+            //final FileChooser chooser = new FileChooser();
+            //chooser.setTitle(windowTitle);
+            //final File dir = chooser.showOpenDialog(mainWindow);
 
-            /*
+
             final File dir;
             if (coversBox.getValue().equals("100-105")) {
                 dir = new File("coversfolder/105cover/");
@@ -316,7 +309,7 @@ public final class Viewer {
                 alert.showAndWait();
                 return;
             }
-            */
+
 
             if (dir != null) {
             	clearBtn.fire();
@@ -371,7 +364,7 @@ public final class Viewer {
 
 				        process.waitFor();
 
-				        new Console(windowTitle, screenScale, output + "\n" + error).show();
+				        new Console(windowTitle, output + "\n" + error).show();
 
 	                } catch (final Exception ex) {
 	                    new ErrorAlert(ex).showAndWait();
@@ -400,7 +393,25 @@ public final class Viewer {
                     final InitialAngles angles = currentStorage.angles;
 
                     final Optional<String> string = Wrapper.checkSquare(selectedRect, codeSeq, angles, currentCover.get());
-                    checkOneInfo.setText(string.get());
+                    final Optional<CodeInfo> info = Wrapper.loadCodeInfo(new CodePair(codeSeq, angles));
+                    final StringBuilder builder = new StringBuilder();
+                    builder.append(string.get());
+                    builder.append("\n\n");
+                    builder.append("Equations of Exact Region\n");
+
+                    for (final Equation equation : info.get().sinEquations) {
+                        builder.append(equation);
+                        builder.append("\n\n");
+                    }
+
+                    for (final Equation equation : info.get().cosEquations) {
+                        builder.append(equation);
+                        builder.append("\n\n");
+                    }
+
+
+
+                    checkOneInfo.setText(builder.toString());
                     checkOneWrap.getChildren().add(checkOneInfo);
                     VBox.setVgrow(checkOneInfo, Priority.ALWAYS);
 
@@ -558,20 +569,20 @@ public final class Viewer {
 
         textXLabel.setText("X:");
         textXField.setEditable(false);
-        textXField.setPrefWidth(130 * screenScale);
+        textXField.setPrefWidth(130);
 
         textYLabel.setText("Y:");
         textYField.setEditable(false);
-        textYField.setPrefWidth(130 * screenScale);
+        textYField.setPrefWidth(130);
 
         // Lock
         textXLockLabel.setText("X:");
         textXLockField.setEditable(false);
-        textXLockField.setPrefWidth(130 * screenScale);
+        textXLockField.setPrefWidth(130);
 
         textYLockLabel.setText("Y:");
         textYLockField.setEditable(false);
-        textYLockField.setPrefWidth(130 * screenScale);
+        textYLockField.setPrefWidth(130);
 
         topImageView.setOnMouseMoved(event -> {
 
@@ -588,53 +599,53 @@ public final class Viewer {
         final HBox minHBox = new HBox();
         minHBox.setSpacing(0);
         minHBox.getChildren().addAll(xMinTextField, yMinTextField);
-        minHBox.setPadding(new Insets(0, 10, 10, 0));
+        minHBox.setPadding(new Insets(0, 8, 8, 0));
         minHBox.setAlignment(Pos.CENTER);
 
         final HBox maxHBox = new HBox();
         maxHBox.setSpacing(0);
         maxHBox.getChildren().addAll(xMaxTextField, yMaxTextField);
-        maxHBox.setPadding(new Insets(0, 10, 0, 0));
+        maxHBox.setPadding(new Insets(0, 8, 0, 0));
         maxHBox.setAlignment(Pos.CENTER);
 
         final VBox zoomFeildsVBox = new VBox();
-        zoomFeildsVBox.setSpacing(10);
+        zoomFeildsVBox.setSpacing(8);
         zoomFeildsVBox.getChildren().addAll(minHBox, maxHBox);
-        zoomFeildsVBox.setPadding(new Insets(0, 0, 10, 0));
+        zoomFeildsVBox.setPadding(new Insets(0, 0, 8, 0));
         zoomFeildsVBox.setAlignment(Pos.CENTER);
 
         final HBox zoomHBox = new HBox();
-        zoomHBox.setSpacing(10);
+        zoomHBox.setSpacing(8);
         zoomHBox.getChildren().addAll(zoomButton, zoomFeildsVBox);
-        zoomHBox.setPadding(new Insets(0, 10, 0, 0));
+        zoomHBox.setPadding(new Insets(0, 8, 0, 0));
         zoomHBox.setAlignment(Pos.CENTER);
 
         final HBox clickActionHBox = new HBox();
-        clickActionHBox.setSpacing(10);
+        clickActionHBox.setSpacing(8);
         clickActionHBox.getChildren().addAll(selectRdoBtn, magnifyRdoBtn, demagnifyRdoBtn, centerBtn);
-        clickActionHBox.setPadding(new Insets(0, 10, 10, 0));
+        clickActionHBox.setPadding(new Insets(0, 8, 8, 0));
         clickActionHBox.setAlignment(Pos.CENTER);
 
         final HBox backForthHBox = new HBox();
-        backForthHBox.setSpacing(10);
+        backForthHBox.setSpacing(8);
         backForthHBox.getChildren().addAll(
             zoomScaleLabel, zoomScaleText, backwardSquareButton, forwardSquareButton);
-        backForthHBox.setPadding(new Insets(0, 10, 10, 0));
+        backForthHBox.setPadding(new Insets(0, 8, 8, 0));
         backForthHBox.setAlignment(Pos.CENTER);
 
         final HBox windowHBox1 = new HBox(
-            10, infoButton, clearBtn, coversBox, loadCoverBtn);
-        windowHBox1.setPadding(new Insets(10, 10, 10, 0));
+            8, infoButton, clearBtn, coversBox, loadCoverBtn);
+        windowHBox1.setPadding(new Insets(8, 8, 8, 0));
         windowHBox1.setAlignment(Pos.CENTER);
 
-        final HBox windowHBox2 = new HBox(10, resetBtn, covRectsColorBox, coverColorCycle, checkCoverBtn);
-        windowHBox2.setPadding(new Insets(0, 10, 10, 0));
+        final HBox windowHBox2 = new HBox(8, resetBtn, covRectsColorBox, coverColorCycle, checkCoverBtn);
+        windowHBox2.setPadding(new Insets(0, 8, 8, 0));
         windowHBox2.setAlignment(Pos.CENTER);
 
         final Label mouseCoordinatesLabel = new Label("Mouse Coordinates");
-        mouseCoordinatesLabel.setPadding(new Insets(0, 10, 10, 10));
+        mouseCoordinatesLabel.setPadding(new Insets(0, 8, 8, 8));
 
-        final VBox leftVBox = new VBox(10, windowHBox1, windowHBox2, zoomHBox, clickActionHBox,
+        final VBox leftVBox = new VBox(8, windowHBox1, windowHBox2, zoomHBox, clickActionHBox,
                 backForthHBox, mouseCoordinatesLabel, textXHBox, textYHBox, textXLockHBox,
                 textYLockHBox, codeSequencesGPane, checkOneWrap);
         leftVBox.setPadding(new Insets(0, 10, 10, 10));
@@ -662,7 +673,6 @@ public final class Viewer {
 
         final HBox bpane = new HBox(10, leftVBox, imageStack);
         bpane.setAlignment(Pos.CENTER);
-        bpane.setStyle("-fx-font-size: " + 12 * screenScale + "px;");
 
         // reflect
         final Affine reflectTransform = new Affine();
@@ -978,7 +988,7 @@ public final class Viewer {
             final Label codeInfo = new Label();
             codeInfo.setText(storage.type + " (" + storage.classCodeSeq.length() + "," + storage.classCodeSeq.sum() + ")");
             codeInfo.setPadding(new Insets(5, 5, 5, 0));
-            lblCodeSequence.setPrefWidth(100 * screenScale);
+            lblCodeSequence.setPrefWidth(100);
             lblCodeSequence.setEditable(false);
 
             drawCBox.setOnAction(event -> {
