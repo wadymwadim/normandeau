@@ -275,11 +275,10 @@ public final class Viewer {
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
 
-            final DirectoryChooser chooser = new DirectoryChooser();
-            chooser.setTitle(windowTitle);
-            final File dir = chooser.showDialog(mainWindow);
+            //final DirectoryChooser chooser = new DirectoryChooser();
+            //chooser.setTitle(windowTitle);
+            //final File dir = chooser.showDialog(mainWindow);
 
-            /*
             final File dir;
             if (coversBox.getValue().equals("100-105")) {
                 dir = new File("coversfolder/105cover/");
@@ -310,7 +309,6 @@ public final class Viewer {
                 alert.showAndWait();
                 return;
             }
-            */
 
             if (dir != null) {
             	clearBtn.fire();
