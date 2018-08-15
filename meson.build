@@ -9,6 +9,7 @@ if compiler_id == 'clang'
                           '-Wno-padded', '-Wno-comma',
                           '-Wno-global-constructors', '-Wno-exit-time-destructors',
                           '-Wno-c++98-compat', '-Wno-c++98-compat-pedantic',
+                          '-Wno-disabled-macro-expansion',
                           '-std=c++14'],
                           language : 'cpp')
 elif compiler_id == 'gcc'
@@ -53,8 +54,7 @@ executable('cover', ['src/cover/cpp/main.cpp'] + sources,
 test_backend = executable('test_backend', ['src/test/cpp/main.cpp'] + sources,
                           include_directories : [headers, test_headers],
                           cpp_args : ['-g', '-fsanitize=undefined',
-                                      '-O3', '-march=native', '-flto',
-                                      '-Wno-disabled-macro-expansion'],
+                                      '-O3', '-march=native', '-flto'],
                           link_args : ['-lgmp', '-lmpfr', '-ltbb',
                                        '-lboost_unit_test_framework',
                                        '-fsanitize=undefined'])

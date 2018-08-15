@@ -82,7 +82,7 @@ struct Divide final {
 
 ClosedRectangleQ load_square(const std::string& dir);
 
-ClosedConvexPolygonQ load_polygon(const std::string& dir);
+OpenConvexPolygonQ load_polygon(const std::string& dir);
 
 std::vector<CodePair> load_singles(const std::string& dir);
 
