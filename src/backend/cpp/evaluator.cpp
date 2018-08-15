@@ -486,15 +486,15 @@ bool Evaluator::is_positive(const EqVec<Trig>& eq, const Coeff64 bound, const Po
         const auto y_coeff = kv.first.arg.coeff(XY::Y);
         const auto t_coeff = kv.second;
 
-        mpq_set_si(xq, x_coeff, 1);     // xq = x_coeff
-        mpq_set_si(yq, y_coeff, 1);     // yq = y_coeff
+        mpq_set_si(xq, x_coeff, 1); // xq = x_coeff
+        mpq_set_si(yq, y_coeff, 1); // yq = y_coeff
 
-        mpq_mul(xq, xq, center.x.backend().data());     // xq = xq * center.x
-        mpq_mul(yq, yq, center.y.backend().data());     // yq = yq * center.y
+        mpq_mul(xq, xq, center.x.backend().data()); // xq = xq * center.x
+        mpq_mul(yq, yq, center.y.backend().data()); // yq = yq * center.y
 
-        mpq_add(argq, xq, yq);      // argq = xq + yq
+        mpq_add(argq, xq, yq); // argq = xq + yq
 
-        mpz_fdiv_qr(quot, rem, mpq_numref(argq), mpq_denref(argq));     // perform integer division with remainder
+        mpz_fdiv_qr(quot, rem, mpq_numref(argq), mpq_denref(argq)); // perform integer division with remainder
 
         // Reuse xq, yq, argq
 

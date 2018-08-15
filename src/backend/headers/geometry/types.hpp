@@ -11,5 +11,4 @@ enum class Check {
     Checked,
     Unchecked,
 };
-
 }

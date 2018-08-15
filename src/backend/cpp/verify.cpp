@@ -4,8 +4,8 @@
 
 #include "evaluator.hpp"
 #include "progress.hpp"
-#include "verify.hpp"
 #include "region.hpp"
+#include "verify.hpp"
 
 template <template <typename> class Trig>
 bool equations_positive(const std::vector<std::tuple<EqVec<Trig>, Coeff64, Coeff64>>& eqs, const PointQ& center, const Rational& radius, Evaluator& eval) {
@@ -116,10 +116,10 @@ struct CenterRadius final {
     Rational rx;
     Rational ry;
 
-    explicit CenterRadius(PointQ center_, Rational rx_, Rational ry_) :
-        center{std::move(center_)},
-        rx{std::move(rx_)},
-        ry{std::move(ry_)} {}
+    explicit CenterRadius(PointQ center_, Rational rx_, Rational ry_)
+        : center{std::move(center_)},
+          rx{std::move(rx_)},
+          ry{std::move(ry_)} {}
 };
 
 static boost::optional<CenterRadius> find_center_radius(const std::vector<PointQ>& primary,
@@ -184,10 +184,10 @@ struct TripleCenterRadius final {
 
     explicit TripleCenterRadius(boost::optional<CenterRadius> stable_neg_,
                                 boost::optional<CenterRadius> unstable_,
-                                boost::optional<CenterRadius> stable_pos_) :
-        stable_neg{std::move(stable_neg_)},
-        unstable{std::move(unstable_)},
-        stable_pos{std::move(stable_pos_)} {}
+                                boost::optional<CenterRadius> stable_pos_)
+        : stable_neg{std::move(stable_neg_)},
+          unstable{std::move(unstable_)},
+          stable_pos{std::move(stable_pos_)} {}
 };
 
 static boost::optional<std::array<Sign, 4>> find_signs(const LinComArrZ<XYEta>& line, const std::array<PointQ, 4>& corners) {
