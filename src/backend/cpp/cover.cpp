@@ -31,7 +31,7 @@ ClosedRectangleQ load_square(const std::string& dir) {
     return square;
 }
 
-ClosedConvexPolygonQ load_polygon(const std::string& dir) {
+OpenConvexPolygonQ load_polygon(const std::string& dir) {
 
     auto polygon_str = read_file(dir + "/polygon.txt");
     boost::trim(polygon_str);
@@ -56,7 +56,7 @@ ClosedConvexPolygonQ load_polygon(const std::string& dir) {
         vertices.emplace_back(x, y);
     }
 
-    return ClosedConvexPolygonQ{vertices};
+    return OpenConvexPolygonQ{vertices};
 }
 
 std::vector<CodePair> load_singles(const std::string& dir) {

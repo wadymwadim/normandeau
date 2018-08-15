@@ -166,6 +166,18 @@ bool subset(const ConvexPolygon<N, Topology::Closed>& polygon, const Rectangle<N
     return true;
 }
 
+template <typename N>
+bool subset(const ConvexPolygon<N, Topology::Open>& polygon, const Rectangle<N, Topology::Closed>& rectangle) {
+
+    for (const auto& vertex : polygon) {
+        if (!element(vertex, rectangle)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // A closed rectangle is a subset of a convex polygon (open or closed) iff each vertex of the first is in the other
 template <typename N, Topology Top>
 bool subset(const Rectangle<N, Topology::Closed>& rectangle, const ConvexPolygon<N, Top>& polygon) {

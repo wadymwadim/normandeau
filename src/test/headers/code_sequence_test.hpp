@@ -23,26 +23,26 @@ BOOST_AUTO_TEST_CASE(test_negative_code_numbers) {
 BOOST_AUTO_TEST_CASE(test_illegal_code_sequences) {
 
     const std::vector<std::vector<CodeNumber>> illegal = {
-        {1}, // O
-        {2}, // E
+        {1}, // 1
+        {2}, // 0
 
-        {3, 5}, // OO
-        {1, 2}, // OE
-        {4, 7}, // EO
+        {3, 5}, // 11
+        {1, 2}, // 10
+        {4, 7}, // 01
 
-        {1, 3, 8},    // OOE
-        {15, 4, 7},   // OEO
-        {32, 17, 81}, // EOO
-        {3, 12, 18},  // OEE
-        {8, 21, 78},  // EOE
-        {38, 52, 25}, // EEO
-        {2, 4, 8},    // EEE
+        {1, 3, 8},    // 110
+        {15, 4, 7},   // 101
+        {32, 17, 81}, // 011
+        {3, 12, 18},  // 100
+        {8, 21, 78},  // 010
+        {38, 52, 25}, // 001
+        {2, 4, 8},    // 000
 
-        {15, 37, 55, 21}, // OOOO
-        {15, 37, 55, 20}, // OOOE
-        {15, 37, 54, 21}, // OOEO
-        {15, 38, 55, 21}, // OEOO
-        {16, 37, 55, 21}, // EOOO
+        {15, 37, 55, 21}, // 1111
+        {15, 37, 55, 20}, // 1110
+        {15, 37, 54, 21}, // 1101
+        {15, 38, 55, 21}, // 1011
+        {16, 37, 55, 21}, // 0111
     };
 
     for (const auto& code_numbers : illegal) {
@@ -69,6 +69,7 @@ BOOST_AUTO_TEST_CASE(test_repeaters) {
 
 BOOST_AUTO_TEST_CASE(test_order) {
     const std::vector<std::pair<std::vector<CodeNumber>, std::vector<CodeNumber>>> codes = {
+
         {{1, 1, 3}, {1, 1, 3}},
         {{3, 1, 1}, {1, 1, 3}},
         {{1, 3, 1}, {1, 1, 3}},

@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(test_parse_lin_com_arr_xy) {
 
     for (const auto& str : input) {
         const auto expr = parse_lin_com_arr_xy(str);
-        std::ostringstream oss;
+        std::ostringstream oss{};
         oss << expr;
         const auto expr_str = oss.str();
         BOOST_TEST(expr_str == str);
@@ -45,8 +45,7 @@ BOOST_AUTO_TEST_CASE(test_parse_lin_com_arr_xypi) {
     for (const auto& str : input) {
         const auto expr = parse_lin_com_arr_xypi(str);
 
-        // TODO make a to_string method?
-        std::ostringstream oss;
+        std::ostringstream oss{};
         oss << expr;
         const auto expr_str = oss.str();
 
@@ -75,9 +74,11 @@ BOOST_AUTO_TEST_CASE(test_parse_lin_com_arr_xyeta) {
 
     for (const auto& str : input) {
         const auto expr = parse_lin_com_arr_xyeta(str);
-        std::ostringstream oss;
+
+        std::ostringstream oss{};
         oss << expr;
         const auto expr_str = oss.str();
+
         BOOST_TEST(expr_str == str);
     }
 }
@@ -99,7 +100,7 @@ BOOST_AUTO_TEST_CASE(test_parse_lin_com_map_trig_xy) {
         const auto string_sin = boost::replace_all_copy(string_trig, "trig", "sin");
         const auto expr_sin = parse_lin_com_map_sin_xy(string_sin);
 
-        std::ostringstream oss_sin;
+        std::ostringstream oss_sin{};
         oss_sin << expr_sin;
         const auto expr_sin_str = oss_sin.str();
 
@@ -108,7 +109,7 @@ BOOST_AUTO_TEST_CASE(test_parse_lin_com_map_trig_xy) {
         const auto string_cos = boost::replace_all_copy(string_trig, "trig", "cos");
         const auto expr_cos = parse_lin_com_map_cos_xy(string_cos);
 
-        std::ostringstream oss_cos;
+        std::ostringstream oss_cos{};
         oss_cos << expr_cos;
         const auto expr_cos_str = oss_cos.str();
 

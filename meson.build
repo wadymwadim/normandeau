@@ -9,6 +9,7 @@ if compiler_id == 'clang'
                           '-Wno-padded', '-Wno-comma',
                           '-Wno-global-constructors', '-Wno-exit-time-destructors',
                           '-Wno-c++98-compat', '-Wno-c++98-compat-pedantic',
+                          '-Wno-disabled-macro-expansion',
                           '-std=c++14'],
                           language : 'cpp')
 elif compiler_id == 'gcc'
@@ -53,25 +54,8 @@ executable('cover', ['src/cover/cpp/main.cpp'] + sources,
 test_backend = executable('test_backend', ['src/test/cpp/main.cpp'] + sources,
                           include_directories : [headers, test_headers],
                           cpp_args : ['-g', '-fsanitize=undefined',
-                                      '-O3', '-march=native', '-flto',
-                                      '-Wno-disabled-macro-expansion'],
+                                      '-O3', '-march=native', '-flto'],
                           link_args : ['-lgmp', '-lmpfr', '-ltbb',
                                        '-lboost_unit_test_framework',
                                        '-fsanitize=undefined'])
 test('test backend', test_backend)
-
-#executable('profile', 'profile/backend/profile.cpp',
-                      #include_directories : headers,
-                      #cpp_args : ['-DNDEBUG', '-O3', '-march=native', '-flto', '-ftrapv', '-g',
-                                   #We need these options to get accurate profiling results
-                                  #'-fno-omit-frame-pointer', '-fno-inline-functions',
-                                  #'-fno-optimize-sibling-calls'],
-                      #link_args : ['-lgmp', '-lmpfr', '-lmpfi'])
-
-# An interesting idea is to run a benchmark for each commit, and see how the performance
-# changes over time.
-#bench = executable('bench', 'bench/backend/bench.cpp',
-                   #include_directories : [headers, nonius],
-                   #cpp_args : ['-DNDEBUG', '-O3', '-march=native', '-flto', '-ftrapv'],
-                   #link_args : ['-lgmp', '-lmpfr', '-lmpfi'])
-#benchmark('benchmark backend', bench)

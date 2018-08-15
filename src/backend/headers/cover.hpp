@@ -7,8 +7,8 @@ struct CodePair final {
     CodeSequence sequence;
     InitialAngles angles;
 
-    explicit CodePair(const CodeSequence& code_sequence_, const InitialAngles& initial_angles_)
-        : sequence{code_sequence_}, angles{initial_angles_} {}
+    explicit CodePair(CodeSequence code_sequence_, InitialAngles initial_angles_)
+        : sequence{std::move(code_sequence_)}, angles{std::move(initial_angles_)} {}
 
     friend std::ostream& operator<<(std::ostream& os, const CodePair& code_pair) {
         return os << code_pair.sequence << ", " << code_pair.angles;
@@ -28,8 +28,10 @@ struct TriplePair final {
     CodePair unstable;
     CodePair stable_pos;
 
-    explicit TriplePair(const CodePair& stable_neg_, const CodePair& unstable_, const CodePair& stable_pos_)
-        : stable_neg{stable_neg_}, unstable{unstable_}, stable_pos{stable_pos_} {}
+    explicit TriplePair(CodePair stable_neg_, CodePair unstable_, CodePair stable_pos_)
+        : stable_neg{std::move(stable_neg_)},
+          unstable{std::move(unstable_)},
+          stable_pos{std::move(stable_pos_)} {}
 
     friend std::ostream& operator<<(std::ostream& os, const TriplePair& triple_pair) {
         return os << triple_pair.stable_neg << "; "
@@ -70,17 +72,17 @@ struct Divide;
 using Cover = boost::variant<Empty, Single, Triple, Divide>;
 
 struct Divide final {
-    // TODO use std::unique_ptr<std::array<Cover, 4>>?
+    // TODO use std::unique_ptr<std::array<Cover, 4>>
     std::vector<Cover> quarters;
 
-    explicit Divide(Cover&& cover0, Cover&& cover1, Cover&& cover2, Cover&& cover3)
-        : quarters{cover0, cover1, cover2, cover3} {}
+    explicit Divide(Cover cover0, Cover cover1, Cover cover2, Cover cover3)
+        : quarters{std::move(cover0), std::move(cover1), std::move(cover2), std::move(cover3)} {}
 };
 }
 
 ClosedRectangleQ load_square(const std::string& dir);
 
-ClosedConvexPolygonQ load_polygon(const std::string& dir);
+OpenConvexPolygonQ load_polygon(const std::string& dir);
 
 std::vector<CodePair> load_singles(const std::string& dir);
 

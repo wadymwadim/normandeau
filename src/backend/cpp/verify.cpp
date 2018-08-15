@@ -424,14 +424,14 @@ class CoverVerifier final : public boost::static_visitor<bool> {
 
   private:
     const ClosedRectangleQ& square;
-    const ClosedConvexPolygonQ& polygon;
+    const OpenConvexPolygonQ& polygon;
     const std::map<size_t, std::pair<CodePair, StableInfo>>& single_infos;
     const std::map<size_t, std::pair<TriplePair, TripleInfo>>& triple_infos;
     const uint32_t bits;
     Progress& progress;
 
   public:
-    explicit CoverVerifier(const ClosedRectangleQ& square_, const ClosedConvexPolygonQ& polygon_,
+    explicit CoverVerifier(const ClosedRectangleQ& square_, const OpenConvexPolygonQ& polygon_,
                            const std::map<size_t, std::pair<CodePair, StableInfo>>& single_infos_,
                            const std::map<size_t, std::pair<TriplePair, TripleInfo>>& triple_infos_,
                            const uint32_t bits_,
@@ -527,7 +527,7 @@ static uint32_t digits_to_bits(const uint32_t digits) {
     return (digits * 1000) / 301 + ((digits * 1000) % 301 ? 2 : 1);
 }
 
-bool verify_cover(const ClosedRectangleQ& square, const ClosedConvexPolygonQ& polygon,
+bool verify_cover(const ClosedRectangleQ& square, const OpenConvexPolygonQ& polygon,
                   const std::map<size_t, std::pair<CodePair, StableInfo>>& single_infos,
                   const std::map<size_t, std::pair<TriplePair, TripleInfo>>& triple_infos,
                   const cover::Cover& cover,
