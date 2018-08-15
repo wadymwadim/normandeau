@@ -412,7 +412,7 @@ struct CountLeaves final : public boost::static_visitor<uint64_t> {
     uint64_t operator()(const cover::Divide& divide) const {
 
         uint64_t sum = 0;
-        for (const auto& quarter : divide.quarters) {
+        for (const auto& quarter : divide.quarters.get()) {
             sum += boost::apply_visitor(*this, quarter);
         }
 
@@ -484,32 +484,32 @@ class CoverVerifier final : public boost::static_visitor<bool> {
     bool operator()(const cover::Divide& divide) const {
 
         const auto quarter_squares = subdivide(square);
-        const auto& quarter_covers = divide.quarters;
+        const auto& quarter_covers = divide.quarters.get();
 
-        // These values get overwritten anyway
+        // These values get overwritten, so just initialize them to false
         bool covered0 = false;
         bool covered1 = false;
         bool covered2 = false;
         bool covered3 = false;
 
         const auto l0 = [&] {
-            const CoverVerifier verifier{quarter_squares.at(0), polygon, single_infos, triple_infos, bits, progress};
-            covered0 = boost::apply_visitor(verifier, quarter_covers.at(0));
+            const CoverVerifier verifier{std::get<0>(quarter_squares), polygon, single_infos, triple_infos, bits, progress};
+            covered0 = boost::apply_visitor(verifier, quarter_covers.get<0>());
         };
 
         const auto l1 = [&] {
-            const CoverVerifier verifier{quarter_squares.at(1), polygon, single_infos, triple_infos, bits, progress};
-            covered1 = boost::apply_visitor(verifier, quarter_covers.at(1));
+            const CoverVerifier verifier{std::get<1>(quarter_squares), polygon, single_infos, triple_infos, bits, progress};
+            covered1 = boost::apply_visitor(verifier, quarter_covers.get<1>());
         };
 
         const auto l2 = [&] {
-            const CoverVerifier verifier{quarter_squares.at(2), polygon, single_infos, triple_infos, bits, progress};
-            covered2 = boost::apply_visitor(verifier, quarter_covers.at(2));
+            const CoverVerifier verifier{std::get<2>(quarter_squares), polygon, single_infos, triple_infos, bits, progress};
+            covered2 = boost::apply_visitor(verifier, quarter_covers.get<2>());
         };
 
         const auto l3 = [&] {
-            const CoverVerifier verifier{quarter_squares.at(3), polygon, single_infos, triple_infos, bits, progress};
-            covered3 = boost::apply_visitor(verifier, quarter_covers.at(3));
+            const CoverVerifier verifier{std::get<3>(quarter_squares), polygon, single_infos, triple_infos, bits, progress};
+            covered3 = boost::apply_visitor(verifier, quarter_covers.get<3>());
         };
 
         tbb::parallel_invoke(l0, l1, l2, l3);
