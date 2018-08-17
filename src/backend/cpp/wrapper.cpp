@@ -1,9 +1,9 @@
 #include <iostream>
 
+#include "check.hpp"
 #include "equations.hpp"
 #include "parse.hpp"
 #include "wrapper.hpp"
-#include "check.hpp"
 
 static std::string serialize(const std::vector<PointQ>& points) {
 
@@ -110,8 +110,8 @@ void cleanup_code_info(const CCodeInfo* const c_code_info) {
 }
 
 char* check_square(const int64_t numerx, const int64_t numery, const int64_t denom,
-                     const char* const code_sequence_ptr, const char* const initial_angles_ptr,
-                     const char* const cover_dir) {
+                   const char* const code_sequence_ptr, const char* const initial_angles_ptr,
+                   const char* const cover_dir) {
 
     try {
         const auto code_sequence = parse_code_sequence(code_sequence_ptr);

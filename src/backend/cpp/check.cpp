@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "check.hpp"
-#include "evaluator.hpp"
 #include "cover.hpp"
 #include "equations.hpp"
+#include "evaluator.hpp"
 
 template <template <typename> class Trig>
 bool equations_positive(const std::vector<std::tuple<EqVec<Trig>, Coeff64, Coeff64>>& eqs, const PointQ& center, const Rational& radius, Evaluator& eval) {

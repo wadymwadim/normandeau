@@ -2,7 +2,7 @@
 
 In these instructions, terminology discribed in the paper is used liberally.
 
-# Loading and Removing Covers 
+# Loading and Removing Covers
 
 To load a cover, select the desired angles you would like to see the cover of. Note: To display the 112.2-112.3 cover and 'All' cover, you must have a machine with at least 10GB free RAM.
 
@@ -10,9 +10,9 @@ To remove a cover and clear any sections, press the 'Clear' button.
 
 # Navigation
 
-You can pan around the viewer by clicking and dragging in the map. 
+You can pan around the viewer by clicking and dragging in the map.
 
-In the menu, there are 4 radio buttons that can be chosen. 'Select' will give information about whatever you clicked on. See the next section of instruction for this. 'Magnify' will zoom to the point you selected. The point you clicked will now be the center of the screen. 'Demagnify' is then of course the same, but zooming out. 'Center' will center the screen on wherever you clicked. The 'Zoom Scale' box is the amount by which to magnify and demagnify by. 
+In the menu, there are 4 radio buttons that can be chosen. 'Select' will give information about whatever you clicked on. See the next section of instruction for this. 'Magnify' will zoom to the point you selected. The point you clicked will now be the center of the screen. 'Demagnify' is then of course the same, but zooming out. 'Center' will center the screen on wherever you clicked. The 'Zoom Scale' box is the amount by which to magnify and demagnify by.
 
 To undo or redo navigation actions, the 'Backward' and 'Forward' buttons. You can also press 'Reset' to bring the map view back to where it was when you opened the program.
 
@@ -26,7 +26,7 @@ To see more detailed info about a code sequence, you can press the button  label
 
 # Viewing the Structure of the Cover
 
-It may be of intrest to you to see how which squares are covered by each code sequence. For this reason, you may select a color after clicking on a square. This will change that square and all other squares that are covered by the same code sequence to that color. Additionally, you can turn the 'Cycle' check box on. This will cause the colors of the cover squares to change as you click on them, with different colors every time. This will allow you to see how the cover is composed. 
+It may be of intrest to you to see how which squares are covered by each code sequence. For this reason, you may select a color after clicking on a square. This will change that square and all other squares that are covered by the same code sequence to that color. Additionally, you can turn the 'Cycle' check box on. This will cause the colors of the cover squares to change as you click on them, with different colors every time. This will allow you to see how the cover is composed.
 
 So far, it is not known whether every periodic path will define a connected region. However, so far every region we have encountered has been star-shaped. You might notice that some sets of cover squares with the same code sequence are disjoint, but this is not because the sequence's region is disjoint. Because there is some overlap in our set of codes, a different code sequence simply filled in some cover squares that would have been filled by another first, causeing it to appear disjoint.
 

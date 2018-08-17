@@ -32,7 +32,6 @@ class Progress final {
         return str;
     }
 
-
     static std::string format_time(const std::chrono::steady_clock::duration& diff) {
 
         const auto hours = std::chrono::duration_cast<std::chrono::hours>(diff).count();

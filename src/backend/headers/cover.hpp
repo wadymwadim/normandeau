@@ -48,6 +48,88 @@ struct TriplePair final {
     }
 };
 
+template <typename T>
+class SharedPtr final {
+
+  private:
+    std::shared_ptr<T> ptr;
+
+  public:
+    template <typename... Args>
+    explicit SharedPtr(Args&&... args) {
+        ptr = std::make_shared<T>(std::forward<Args>(args)...);
+    }
+
+    T& get() {
+        return *ptr;
+    }
+
+    const T& get() const {
+        return *ptr;
+    }
+
+    friend bool operator==(const SharedPtr<T>& lhs, const SharedPtr<T>& rhs) {
+        return lhs.get() == rhs.get();
+    }
+
+    friend bool operator<(const SharedPtr<T>& lhs, const SharedPtr<T>& rhs) {
+        return lhs.get() < rhs.get();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const SharedPtr<T>& p) {
+        return os << p.get();
+    }
+};
+
+template <typename T>
+class Quarters final {
+
+  private:
+    std::array<T, 4> arr;
+
+  public:
+    using value_type = typename decltype(arr)::value_type;
+    using iterator = typename decltype(arr)::iterator;
+    using const_iterator = typename decltype(arr)::const_iterator;
+
+    explicit Quarters(T ul, T ur, T ll, T lr)
+        : arr{{std::move(ul), std::move(ur), std::move(ll), std::move(lr)}} {}
+
+    iterator begin() {
+        return std::begin(arr);
+    }
+
+    iterator end() {
+        return std::end(arr);
+    }
+
+    const_iterator begin() const {
+        return std::begin(arr);
+    }
+
+    const_iterator end() const {
+        return std::end(arr);
+    }
+
+    template <size_t index>
+    T& get() {
+        return std::get<index>(arr);
+    }
+
+    template <size_t index>
+    const T& get() const {
+        return std::get<index>(arr);
+    }
+
+    T& at(const size_t i) {
+        return arr.at(i);
+    }
+
+    const T& at(const size_t i) const {
+        return arr.at(i);
+    }
+};
+
 namespace cover {
 
 struct Empty final {};
@@ -72,8 +154,8 @@ struct Divide;
 using Cover = boost::variant<Empty, Single, Triple, Divide>;
 
 struct Divide final {
-    // TODO use std::unique_ptr<std::array<Cover, 4>>
-    std::vector<Cover> quarters;
+    // TODO once we have support for std::variant, we can likely change this to a unique_ptr
+    SharedPtr<Quarters<Cover>> quarters;
 
     explicit Divide(Cover cover0, Cover cover1, Cover cover2, Cover cover3)
         : quarters{std::move(cover0), std::move(cover1), std::move(cover2), std::move(cover3)} {}
