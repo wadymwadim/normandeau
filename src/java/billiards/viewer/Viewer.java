@@ -291,7 +291,7 @@ public final class Viewer {
             } else if (coversBox.getValue().equals("112.1-112.2")) {
                 dir = new File("coversfolder/112_2cover/");
 
-            } else if (coversBox.getValue().equals("112.2-12.3")) {
+            } else if (coversBox.getValue().equals("112.2-112.3")) {
                 dir = new File("coversfolder/112_3cover/");
 
             } else if (coversBox.getValue().equals("All")) {
