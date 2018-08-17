@@ -275,10 +275,6 @@ public final class Viewer {
         Utils.colorButton(loadCoverBtn, Color.LIGHTPINK, clickColor);
         loadCoverBtn.setOnAction(e -> {
 
-            //final DirectoryChooser chooser = new DirectoryChooser();
-            //chooser.setTitle(windowTitle);
-            //final File dir = chooser.showDialog(mainWindow);
-
             final File dir;
             if (coversBox.getValue().equals("100-105")) {
                 dir = new File("coversfolder/105cover/");
@@ -337,33 +333,13 @@ public final class Viewer {
 		                final ProcessBuilder builder = new ProcessBuilder("build/exe/cover/cover",
 		                                                                  currentCover.get());
 		                // Redirect the stdout and stderr so they are printed
-		                // builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-		                // builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+		                builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+		                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
 		                final Process process = builder.start();
 
-		                final BufferedReader reader =
-		                		new BufferedReader(new InputStreamReader(process.getInputStream()));
-				        final StringBuilder strB = new StringBuilder();
-				        String line = null;
-				        while ((line = reader.readLine()) != null) {
-				        	strB.append(line);
-				        	strB.append("\n");
-				        }
-				        String output = strB.toString();
-
-				        BufferedReader readerErr = new BufferedReader(new InputStreamReader(process.getInputStream()));
-				        StringBuilder strErr = new StringBuilder();
-				        String lineErr = null;
-				        while ((lineErr = readerErr.readLine()) != null) {
-				        	strErr.append(lineErr);
-				        	strErr.append("\n");
-				        }
-				        String error = strErr.toString();
-
 				        process.waitFor();
 
-				        new Console(windowTitle, output + "\n" + error).show();
 
 	                } catch (final Exception ex) {
 	                    new ErrorAlert(ex).showAndWait();
