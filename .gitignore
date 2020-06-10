@@ -1,8 +1,6 @@
 # Ignore the output files from the program
 *.txt
-
-# Any zip files.
-*.zip
+coversfolder.zip
 
 # Gradle
 .gradle
