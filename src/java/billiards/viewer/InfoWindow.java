@@ -173,7 +173,7 @@ public final class InfoWindow {
             final double degX = Math.toDegrees(point.x);
             final double degY = Math.toDegrees(point.y);
 
-            buff.append(String.format("(%f, %f)%n", degX, degY));
+            buff.append(String.format("(%f, %f)%n", 180-degX-degY, degY));//George changed degX to 180-degX-degY April 29,2020
         }
 
         buff.append("\n\n");

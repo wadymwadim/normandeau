@@ -38,7 +38,7 @@ The best way to check the cover is to click on one square, and then press "Check
 
 Checking the whole cover can take a long time, depending on your machine. The first cover, 100-105, will run in less than 5 minutes. It is not recommended that you run any of the other ones unless you are prepared to let it run for quite awhile. The 105-110 cover will take several hours on a standard computer. The rest will take days.
 
-
+You can also check the cover using 112.3-112.4 A to L which takes less time.
 
 
 

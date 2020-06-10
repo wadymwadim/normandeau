@@ -84,7 +84,7 @@ public final class Viewer {
     private static final int SIZE = (700);
 
     // IMPORTANT: This is the color of the 90 and 80 lines and any additional lines
-    private static final Color lineColor = Color.MAGENTA;
+    private static final Color lineColor = Color.MAGENTA;//MAGENTA george
 
     final Color clickColor = Color.GOLD;
     final String textBoxColor = Utils.hex(Color.MISTYROSE);
@@ -148,7 +148,27 @@ public final class Viewer {
     // This one is transparent, and goes on top to capture all the mouse events
     final ImageView topImageView = renderColor(Color.TRANSPARENT);
 
-    final MutableList<Point> infPatPoints = FastList.newListWith(
+   /* final MutableList<Point> infPatPoints = FastList.newListWith(
+    		//Point.create(0, Math.PI / 2),
+    		Point.create(22.49 * Math.PI / 180, 22.61 * Math.PI / 180),
+    		Point.create(22.55 * Math.PI / 180, 22.55 * Math.PI / 180),
+    		Point.create(22.49 * Math.PI / 180, 22.49 * Math.PI / 180));
+    		//Point.create(0, 67.5 * Math.PI / 180));
+    final ConvexPolygon infPatternArea = ConvexPolygon.create(infPatPoints.toImmutable());
+    */
+    
+  /*  final MutableList<Point> infPatPoints2 = FastList.newListWith(
+    		
+	Point.create(224998 * Math.PI / 1800000, 225002 * Math.PI / 1800000),
+	Point.create(225001 * Math.PI / 1800000, 225023 * Math.PI / 1800000),
+	Point.create(225012 * Math.PI / 1800000, 225012 * Math.PI / 1800000),
+	Point.create(22499999 * Math.PI / 180000000, 22499999 * Math.PI / 180000000));
+	
+    final ConvexPolygon infPatternArea2 = ConvexPolygon.create(infPatPoints2.toImmutable());
+*///note this will grey out george may 31,2020
+   
+    
+    final MutableList<Point> infPatPoints = FastList.newListWith(//george
     		Point.create(0, Math.PI / 2),
     		Point.create(22.5 * Math.PI / 180, 67.5 * Math.PI / 180),
     		Point.create(0, 67.5 * Math.PI / 180));
@@ -222,7 +242,7 @@ public final class Viewer {
         // This gets passed in from the outside world
         mainWindow = primaryStage;
 
-        final String windowTitle = String.format("Billiard Viewer");
+        final String windowTitle = String.format("Billiard Viewer 15copy2");//george may 22,2020
 
         Utils.setupCustomTooltipBehavior((int) (TipOpenDelay * 1000), (int) (TipCloseDelay * 1000), 200);
 
@@ -266,7 +286,7 @@ public final class Viewer {
         infoButton.setOnAction(event -> new InfoWindow(windowTitle).show());
 
 
-        coversBox.getItems().addAll("100-105", "105-110", "110-112", "112-112.1", "112.1-112.2", "112.2-112.3", "All");
+        coversBox.getItems().addAll("100-105", "105-110", "110-112", "112-112.1", "112.1-112.2", "112.2-112.3", "112.3-112.4", "112.3-112.4A", "112.3-112.4B", "112.3-112.4C", "112.3-112.4D", "112.3-112.4E", "112.3-112.4F", "112.3-112.4G", "112.3-112.4H", "112.3-112.4I", "112.3-112.4J", "112.3-112.4K", "112.3-112.4L", "12-14", "14-15", "15-17", "17-22.4988", "22.4988-33.8", "All");//george
         coversBox.setTooltip(Utils.toolTip("Select which cover will be loaded."));
         coversBox.setValue("100-105");
         Utils.colorButton(coversBox, Color.SKYBLUE, clickColor);
@@ -293,6 +313,60 @@ public final class Viewer {
 
             } else if (coversBox.getValue().equals("112.2-112.3")) {
                 dir = new File("coversfolder/112_3cover/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4")) {//george
+                dir = new File("coversfolder/112_4cover/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4A")) {//george
+                dir = new File("coversfolder/112_4coverA/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4B")) {//george
+                dir = new File("coversfolder/112_4coverB/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4C")) {//george
+                dir = new File("coversfolder/112_4coverC/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4D")) {//george
+                dir = new File("coversfolder/112_4coverD/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4E")) {//george
+                dir = new File("coversfolder/112_4coverE/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4F")) {//george
+                dir = new File("coversfolder/112_4coverF/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4G")) {//george
+                dir = new File("coversfolder/112_4coverG/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4H")) {//george
+                dir = new File("coversfolder/112_4coverH/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4I")) {//george
+                dir = new File("coversfolder/112_4coverI/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4J")) {//george
+                dir = new File("coversfolder/112_4coverJ/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4K")) {//george
+                dir = new File("coversfolder/112_4coverK/");
+                
+            } else if (coversBox.getValue().equals("112.3-112.4L")) {//george
+                dir = new File("coversfolder/112_4coverL/");
+                
+            } else if (coversBox.getValue().equals("12-14")) {//george
+                dir = new File("coversfolder/12-14cover/");
+                
+            } else if (coversBox.getValue().equals("14-15")) {//george
+                dir = new File("coversfolder/14-15cover/");
+                
+            } else if (coversBox.getValue().equals("15-17")) {//george
+                dir = new File("coversfolder/15-17cover/");
+             
+            } else if (coversBox.getValue().equals("17-22.4988")) {//george
+                dir = new File("coversfolder/17-22.4988cover/");
+                  
+            } else if (coversBox.getValue().equals("22.4988-33.8")) {//george
+                dir = new File("coversfolder/22.4988-33.8cover/");
 
             } else if (coversBox.getValue().equals("All")) {
                 dir = new File("coversfolder/allcovers/");
@@ -387,6 +461,9 @@ public final class Viewer {
 
 
                     checkOneInfo.setText(builder.toString());
+                    
+                   // System.out.print(builder.toString()); george aug 19,2019
+                    
                     checkOneWrap.getChildren().add(checkOneInfo);
                     VBox.setVgrow(checkOneInfo, Priority.ALWAYS);
 
@@ -1179,18 +1256,44 @@ public final class Viewer {
         final WritableImage image = new WritableImage(SIZE, SIZE);
         final PixelWriter pixelWriter = image.getPixelWriter();
 
-        // we consider the infinite pattern area as part of the background
+       //  we consider the infinite pattern area as part of the background
         for (int i = 0; i < SIZE; i++) {
         	for (int j = 0; j < SIZE; j++) {
         		final double rx = map.radianX(i);
         		final double ry = map.radianY(j);
         		if (infPatternArea.location(rx, ry) == Location.INSIDE) {
-            		pixelWriter.setColor(i, j, Color.LIGHTGRAY);
+            		pixelWriter.setColor(i, j, Color.LIGHTGREY);//george may 20,2020 this gives the infinite corner
         		}
             	if (ry > 67.5 * Math.PI / 180 && (rx + ry) < Math.PI / 2 && rx > 0) {
             	}
             }
         }
+        
+        // we consider the infinite pattern area as part of the background
+      /*  for (int i = 0; i < SIZE; i++) {
+        	for (int j = 0; j < SIZE; j++) {
+        		final double rx = map.radianX(i);
+        		final double ry = map.radianY(j);
+        		if (infPatternArea2.location(rx, ry) == Location.INSIDE) {
+            		pixelWriter.setColor(i, j, Color.LIGHTGREY);//george may 20,2020 this gives the infinite corner
+        		}
+            	if (rx > 22.4998 * Math.PI / 180 && (rx + ry) < 45.0024 * Math.PI / 180 && ry > 22.499999 * Math.PI /180) {
+            	}
+            }
+        }*/ //george may31,2020 this will grey out
+        
+     // we consider the infinite pattern area as part of the background
+       /* for (int i = 0; i < SIZE; i++) {
+        	for (int j = 0; j < SIZE; j++) {
+        		final double rx = map.radianX(i);
+        		final double ry = map.radianY(j);
+        		if (infPatternArea.location(rx, ry) == Location.INSIDE) {
+            		pixelWriter.setColor(i, j, Color.LIGHTGREY);//george may 20,2020 this gives the infinite corner
+        		}
+            	if (rx > 22.49 * Math.PI / 180 && (rx + ry) < 90 * Math.PI / 180 && ry > 22.49 * Math.PI /180) {
+            	}
+            }
+        }*/
 
         // we have several horizontal lines, several vertical lines, and oblique ones
         drawHorizontalLine(0, 0, Math.PI, pixelWriter, lineColor, false);
@@ -1230,9 +1333,95 @@ public final class Viewer {
                         -> 17 * Math.PI / 45 - x,
                         0, 17 * Math.PI / 45,
                         y -> 17 * Math.PI / 45 - y, 0, 17 * Math.PI / 45, pixelWriter, lineColor, false);
+        
+        // IMPORTANT: This is the line x + y = 67.7 //george
+        drawObliqueLine(x
+                        -> 677 * Math.PI / 1800 - x,
+                        0, 677 * Math.PI / 1800,
+                        y -> 677 * Math.PI / 1800 - y, 0, 677 * Math.PI / 1800, pixelWriter, lineColor, false);
+  
+        
+        // IMPORTANT: This is the line x + y = 67.6 //george
+        drawObliqueLine(x
+                        -> 169 * Math.PI / 450 - x,
+                        0, 169 * Math.PI / 450,
+                        y -> 169 * Math.PI / 450 - y, 0, 169 * Math.PI / 450, pixelWriter, lineColor, false);
 
+        // IMPORTANT: This is the line x + y = 28 //george
+        drawObliqueLine(x
+                        -> 280 * Math.PI / 1800 - x,
+                        0, 280 * Math.PI / 1800,
+                        y -> 280 * Math.PI / 1800 - y, 0, 280 * Math.PI / 1800, pixelWriter, lineColor, false);
+  
+        // IMPORTANT: This is the line x + y = 30 //george
+        drawObliqueLine(x
+                        -> 300 * Math.PI / 1800 - x,
+                        0, 300 * Math.PI / 1800,
+                        y -> 300 * Math.PI / 1800 - y, 0, 300 * Math.PI / 1800, pixelWriter, lineColor, false);
+
+        // IMPORTANT: This is the line x + y = 34 //george
+        drawObliqueLine(x
+                        -> 340 * Math.PI / 1800 - x,
+                        0, 340 * Math.PI / 1800,
+                        y -> 340 * Math.PI / 1800 - y, 0, 340 * Math.PI / 1800, pixelWriter, lineColor, false);
+
+        // IMPORTANT: This is the line x + y = 44.9976 //george
+        drawObliqueLine(x
+                        -> 449976 * Math.PI / 1800000 - x,
+                        0, 449976 * Math.PI / 1800000,
+                        y -> 449976 * Math.PI / 1800000 - y, 0, 449976 * Math.PI / 1800000, pixelWriter, lineColor, false);
+ 
+        // IMPORTANT: This is the line x + y = 45 //george
+        drawObliqueLine(x
+                        -> 450 * Math.PI / 1800 - x,
+                        0, 450 * Math.PI / 1800,
+                        y -> 450 * Math.PI / 1800 - y, 0, 450 * Math.PI / 1800, pixelWriter, lineColor, false);
+ 
+        // IMPORTANT: This is the line x + y = 45.0024 //george
+        drawObliqueLine(x
+                        -> 450024 * Math.PI / 1800000 - x,
+                        0, 450024 * Math.PI / 1800000,
+                        y -> 450024 * Math.PI / 1800000 - y, 0, 450024 * Math.PI / 1800000, pixelWriter, lineColor, false);
+ 
+        
         // IMPORTANT: This is the line x = y
         drawObliqueLine(x -> x, 0, Math.PI / 4, y -> y, 0, Math.PI / 4, pixelWriter, lineColor, false);
+
+     // x = 12 degrees George may 25,2020
+        drawVerticalLine(Math.PI / 15, Math.PI / 15, 37 * Math.PI / 120, pixelWriter, lineColor, false);
+
+        // x = 1 degrees George may 25,2020
+        drawVerticalLine(Math.PI / 180, Math.PI / 180, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .5 degrees George may 25,2020
+        drawVerticalLine(Math.PI / 360, Math.PI / 360, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .425 degrees George may 25,2020
+        drawVerticalLine(425*Math.PI / 180000, 425*Math.PI / 180000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .3625 degrees George may 25,2020
+        drawVerticalLine(3625*Math.PI / 1800000, 3625*Math.PI / 1800000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .35 degrees George may 25,2020
+        drawVerticalLine(35*Math.PI / 18000, 35*Math.PI / 18000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .325 degrees George may 25,2020
+        drawVerticalLine(325*Math.PI / 180000, 325*Math.PI / 180000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .295 degrees George may 25,2020
+        drawVerticalLine(295*Math.PI / 180000, 295*Math.PI / 180000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .26 degrees George may 25,2020
+        drawVerticalLine(26*Math.PI / 18000, 26*Math.PI / 18000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .23 degrees George may 25,2020
+        drawVerticalLine(23*Math.PI / 18000, 23*Math.PI / 18000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .18 degrees George may 25,2020
+        drawVerticalLine(18*Math.PI / 18000, 18*Math.PI / 18000, Math.PI / 2, pixelWriter, lineColor, false);
+
+        // x = .13 degrees George may 25,2020
+        drawVerticalLine(13*Math.PI / 18000, 13*Math.PI / 18000, Math.PI / 2, pixelWriter, lineColor, false);
 
         return image;
     }

@@ -1,6 +1,9 @@
 # Ignore the output files from the program
 *.txt
 
+# Any zip files.
+*.zip
+
 # Gradle
 .gradle
 build/
@@ -13,7 +16,7 @@ gradle-app.setting
 meson
 
 # Eclipse
-.project
-.classpath
+.project.xml
+.classpath.xml
 .settings
 bin/
