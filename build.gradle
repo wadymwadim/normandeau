@@ -1,6 +1,15 @@
-apply plugin: 'application'
-apply plugin: 'cpp'
 //apply plugin: 'findbugs'
+
+plugins {
+    id 'application'
+    id 'cpp'
+    id 'org.openjfx.javafxplugin' version '0.0.7'
+}
+
+javafx {
+    version = "11"
+    modules = [ 'javafx.controls' ]
+}
 
 mainClassName = 'billiards.viewer.Main'
 
