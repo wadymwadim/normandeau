@@ -1,4 +1,4 @@
-< Describe me in a sentence or two >
+This program was built using a mac.
 
 This README starts with running instructions, then an older README follows which is more detailed but also somewhat outdated.
 
