@@ -4,6 +4,8 @@ This README starts with running instructions, then an older README follows which
 
 We include a minimal description here of the commands required to compile and run this program. Below, in the older README there are detailed descriptions for where these commands come from. The command install a number of tools and libraries required to compile the program. We walk through the setup here from start to running.
 
+Please let us know if the instructions seem incomplete or are breaking, by e.g. filing an issue.
+
 ## Setup on Linux
 
 This description targets Debian based distributions with the apt package manager. It should be relatively straightforward to adapt it to other distributions.
@@ -15,6 +17,35 @@ $ sudo apt install libgmp-dev libmpfr-dev libmpfi-dev libboost-all-dev libeigen3
 ```
 
 (Naturally, if you want to get the code with git, also run `$ sudo apt install git-all`.)
+
+## Setup on MacOS
+
+Installing required tools and all dependencies.
+
+Install developer tools.
+```
+xcode-select --install
+```
+
+Install `brew` so we can get dependencies,
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+```
+
+Get all dependencies (make sure linking steps also succeed):
+```
+brew install gmp mpfr mpfi boost eigen tbb jemalloc gradle
+```
+
+If you want to use git to get the code, you also need to install that.
+```
+git --version
+```
+will either confirm you already have it, or offer to install it.
+
+## Setup both Linux and MacOS
+
+This step assumes you completed the appropriate steps above. This step is the same for Linux and MacOS.
 
 The project requires java and javafx version 8. These are not supported anymore/at this time (ubuntu [bug report](https://bugs.launchpad.net/ubuntu/+source/openjfx/+bug/1799946)), which is why we didn't download java or javafx with `apt`.
 There are a number of options here, we simply choose one convenient one here. We include instructions to install zulu-fx version 8. We install it through [sdkman](https://sdkman.io/) (a software development kit manager) to make managing java installations manageable.
