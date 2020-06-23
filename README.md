@@ -1,22 +1,23 @@
-This program was built using a mac.
-
 This README starts with running instructions, then an older README follows which is more detailed but also somewhat outdated.
 
 # How to Run
 
-The program is built in java 8 with javafx and cpp, requiring a number of libraries to be present and some setup work. We walk through the setup here from start to running.
+We include a minimal description here of the commands required to compile and run this program. Below, in the older README there are detailed descriptions for where these commands come from. The command install a number of tools and libraries required to compile the program. We walk through the setup here from start to running.
 
-## Environment Setup
+## Setup on Linux
 
-This description targets Linux with the apt package manager, however there are alternatives provided for Mac OS below.
+This description targets Debian based distributions with the apt package manager. It should be relatively straightforward to adapt it to other distributions.
 
-Fetch dependencies with apt:
+Fetch dependencies with `apt`:
 ```
 $ sudo apt update
 $ sudo apt install libgmp-dev libmpfr-dev libmpfi-dev libboost-all-dev libeigen3-dev libtbb-dev libjemalloc-dev libsqlite3-dev
 ```
 
-We did not download java or javafx since javafx version 8 is not properly supported anymore (ubuntu [bug report](https://bugs.launchpad.net/ubuntu/+source/openjfx/+bug/1799946)). Instead we install zulu-fx version 8 java that comes prepackaged with javafx. We install it through [sdkman](https://sdkman.io/) (a software development kit manager) to make managing java installations.. manageable.
+(Naturally, if you want to get the code with git, also run `$ sudo apt install git-all`.)
+
+The project requires java and javafx version 8. These are not supported anymore/at this time (ubuntu [bug report](https://bugs.launchpad.net/ubuntu/+source/openjfx/+bug/1799946)), which is why we didn't download java or javafx with `apt`.
+There are a number of options here, we simply choose one convenient one here. We include instructions to install zulu-fx version 8. We install it through [sdkman](https://sdkman.io/) (a software development kit manager) to make managing java installations manageable.
 
 ```
 curl -s "https://get.sdkman.io" | bash
@@ -28,9 +29,14 @@ sdk install java 8.0.252.fx-zulu
 
 ## Get billiards code
 
-To fetch the code and extract its compressed data
+To fetch the code with git,
 ```
 $ git clone git@github.com:szepi1991/billiards.git
+```
+otherwise you can download it from github as a zip.
+
+Some of the contents have been compressed since they take significantly less space that way. Instructions to enter the directory and extract these files.
+```
 $ cd billiards
 $ cat split_coversfolder0* > coversfolder.zip
 $ unzip coversfolder.zip
