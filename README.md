@@ -62,7 +62,7 @@ sdk install java 8.0.252.fx-zulu
 
 To fetch the code with git,
 ```
-$ git clone git@github.com:szepi1991/billiards.git
+$ git clone https://gtokarsky:61946fogfarm@github.com/szepi1991/normandeaufarms.git
 ```
 otherwise you can download it from github as a zip.
 
