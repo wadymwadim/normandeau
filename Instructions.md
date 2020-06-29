@@ -1,6 +1,6 @@
 # Remarks
 
-In these instructions, terminology discribed in the paper is used liberally.
+In these instructions, terminology described in the paper is used liberally.
 
 # Loading and Removing Covers
 
